@@ -5,78 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Consulta - Psicóloga</title>
     <link rel="stylesheet" href="../css/style.css">
-    <!-- Carregador Supabase com múltiplos CDNs e versões - VERSÃO ESTÁVEL -->
-    <script>
-        window.supabaseLoaded = false;
+    <!-- Carregador Supabase com ESM dinâmico -->
+    <script type="module">
+        // Import dinâmico de Supabase via skypack (que fornece ES modules)
+        let supabaseLib = window.supabase || null;
+        let startupAttempts = 0;
+        const maxAttempts = 3;
         
-        (function loadSupabase() {
-            // Múltiplas opções de CDN + versões que funcionam
-            const cdns = [
-                // Versão sem especificar = latest
-                'https://unpkg.com/@supabase/supabase-js/dist/module.umd.js',
-                'https://unpkg.com/@supabase/supabase-js@^2/dist/module.umd.js',
-                // Versão 2.39.0 (mais recente disponível)
-                'https://unpkg.com/@supabase/supabase-js@2.39.0/dist/module.umd.js',
-                // Fallback esm.sh
-                'https://esm.sh/stable/@supabase/supabase-js',
-                // Outro fallback
-                'https://deno.land/x/supabase_js@v2.39.0/mod.ts'
-            ];
-            
-            let loaded = false;
-            let successCount = 0;
-            
-            cdns.forEach((cdnUrl) => {
-                const script = document.createElement('script');
-                script.src = cdnUrl;
-                script.async = true;
+        async function loadSupabaseESM() {
+            try {
+                console.log('Attempting to load Supabase via ESM...');
+                // skypack fornece UMD y ESM que funciona em browsers antigos
+                const module = await import('https://cdn.skypack.dev/@supabase/supabase-js');
                 
-                script.onload = function() {
-                    // Aguardar um pouco para a biblioteca se registrar no window
-                    setTimeout(() => {
-                        if (!loaded && typeof window.supabase !== 'undefined') {
-                            loaded = true;
-                            window.supabaseLoaded = true;
-                            successCount++;
-                            console.log('✓ Supabase FINALMENTE carregou via:', cdnUrl);
-                            console.log('✓ window.supabase disponível:', !!window.supabase);
-                        }
-                    }, 100);
-                };
-                
-                script.onerror = function() {
-                    console.warn('⚠️ CDN falhou:', cdnUrl);
-                };
-                
-                document.head.appendChild(script);
-            });
-            
-            // Verificar status de carregamento
-            let checkCount = 0;
-            const statusCheck = setInterval(() => {
-                checkCount++;
-                
-                if (window.supabaseLoaded && typeof window.supabase !== 'undefined') {
-                    clearInterval(statusCheck);
-                    console.log('✓✓✓ SUPABASE CARREGOU COM SUCESSO! ✓✓✓');
-                    return;
-                }
-                
-                // Mensagem a cada 1 segundo
-                if (checkCount % 10 === 0) {
-                    console.log(`⏳ Aguardando Supabase... (${checkCount/10}s)`);
-                }
-                
-                // Timeout após 20 segundos
-                if (checkCount > 200) {
-                    clearInterval(statusCheck);
-                    if (!window.supabaseLoaded) {
-                        console.error('❌ Supabase falhou após 20 segundos. Todos os CDNs rejeitaram.');
-                        console.error('Nenhum CDN foi bem-sucedido. Verifique sua conexão ou tente modo incógnito.');
-                    }
-                }
-            }, 100);
-        })();
+                // Exportar globalmente
+                window.supabase = module;
+                window.supabaseLoaded = true;
+                console.log('✓✓✓ SUPABASE CARREGOU VIA ESM! ✓✓✓');
+                return true;
+            } catch (error) {
+                console.warn('Skypack failed, trying unpkg...', error.message);
+                return false;
+            }
+        }
+        
+        // Carregar na startup
+        loadSupabaseESM().catch(e => {
+            console.error('All Supabase loading methods failed:', e);
+        });
     </script>
 </head>
 <body>
