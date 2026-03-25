@@ -265,7 +265,8 @@
             window.cancelarAgendamentoUI = async function(id) {
                 if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
                     try {
-                        await deletarAgendamento(id);
+                        await atualizarStatusAgendamento(id, 'cancelado');
+                        alert('Agendamento cancelado com sucesso!');
                         buscarAgendamentos();
                     } catch (erro) {
                         alert('Erro ao cancelar agendamento: ' + erro.message);

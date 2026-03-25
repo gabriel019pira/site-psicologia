@@ -204,6 +204,28 @@
                 };
 
                 try {
+                    // VALIDAR se já existe agendamento para este telefone
+                    alertaDiv.innerHTML = '<div class="alert alert-info">Verificando disponibilidade do agendamento...</div>';
+                    const agendamentosExistentes = await obterAgendamentosPaciente(dados.telefone);
+                    
+                    // Verificar se há agendamentos pendentes ou confirmados (não cancelados)
+                    const agendamentoAtivo = agendamentosExistentes.find(a => a.status !== 'cancelado');
+                    
+                    if (agendamentoAtivo) {
+                        alertaDiv.innerHTML = `
+                            <div class="alert alert-error">
+                                ⚠️ Já existe um agendamento ativo para este número de telefone!<br>
+                                <strong>Data:</strong> ${converterDataParaBrasileiro(agendamentoAtivo.data)} às ${agendamentoAtivo.hora}<br>
+                                <strong>Status:</strong> ${agendamentoAtivo.status === 'confirmado' ? 'Confirmado' : 'Pendente'}<br>
+                                <br>
+                                Para agendar uma nova consulta, você precisa consultar seus agendamentos atuais.<br>
+                                <a href="meus-agendamentos.html">Acessar meus agendamentos</a>
+                            </div>
+                        `;
+                        alertaDiv.scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+
                     // Registrar usando Supabase
                     const agendamento = await registrarAgendamentoSupabase(dados);
                     

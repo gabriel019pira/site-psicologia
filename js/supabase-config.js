@@ -2,6 +2,11 @@
 const SUPABASE_URL = 'https://dpobhypdzgorabjlkppv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_7-rieCzisyK5_WDG5oJ91g_cG4xHvJs';
 
+// Função para normalizar telefone (remove formatação para comparação)
+function normalizarTelefone(telefone) {
+    return telefone.replace(/\D/g, ''); // Remove tudo que não seja dígito
+}
+
 // Variável global para o cliente Supabase
 let supabaseClient = null;
 
@@ -139,10 +144,15 @@ async function obterAgendamentosPaciente(telefone) {
             throw new Error('Supabase não inicializou. Verifique sua conexão de internet.');
         }
 
+        // Normalizar telefone para comparação (remove formatação)
+        const telefonNormalizado = normalizarTelefone(telefone);
+        console.log('📞 Telefone normalizado:', telefonNormalizado);
+
+        // Buscar todos os agendamentos e filtrar localmente
+        // Isso permite comparação flexível de telefones com diferentes formatações
         const { data, error } = await client
             .from('agendamentos')
             .select('*')
-            .eq('telefone', telefone)
             .order('data', { ascending: false });
 
         if (error) {
@@ -150,8 +160,13 @@ async function obterAgendamentosPaciente(telefone) {
             throw error;
         }
         
-        console.log(`✓ Encontrados ${data?.length || 0} agendamentos`);
-        return data || [];
+        // Filtrar localmente por telefone normalizado
+        const agendamentosFiltrados = data.filter(a => 
+            normalizarTelefone(a.telefone) === telefonNormalizado
+        );
+        
+        console.log(`✓ Encontrados ${agendamentosFiltrados.length} agendamentos`);
+        return agendamentosFiltrados || [];
     } catch (error) {
         console.error('❌ Erro ao obter agendamentos:', error);
         throw error;
@@ -198,10 +213,16 @@ async function atualizarStatusAgendamento(id, novoStatus) {
             throw new Error('Supabase não inicializou. Verifique sua conexão de internet.');
         }
 
+        // Converter ID para número (vem como string do onclick do HTML)
+        const idNum = parseInt(id, 10);
+        if (isNaN(idNum)) {
+            throw new Error(`ID inválido: ${id}`);
+        }
+
         const { error } = await client
             .from('agendamentos')
             .update({ status: novoStatus })
-            .eq('id', id);
+            .eq('id', idNum);
 
         if (error) {
             console.error('❌ Erro Supabase ao atualizar:', error);
@@ -227,10 +248,16 @@ async function deletarAgendamento(id) {
             throw new Error('Supabase não inicializou. Verifique sua conexão de internet.');
         }
 
+        // Converter ID para número (vem como string do onclick do HTML)
+        const idNum = parseInt(id, 10);
+        if (isNaN(idNum)) {
+            throw new Error(`ID inválido: ${id}`);
+        }
+
         const { error } = await client
             .from('agendamentos')
             .delete()
-            .eq('id', id);
+            .eq('id', idNum);
 
         if (error) {
             console.error('❌ Erro Supabase ao deletar:', error);

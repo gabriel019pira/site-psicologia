@@ -229,8 +229,13 @@
             usuarioLogado = true;
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminContainer').style.display = 'block';
-            carregarDados();
-            configurarEventos();
+            // Garantir que Supabase está carregado antes de carregar dados
+            ensureSupabaseLoaded().then(() => {
+                carregarDados();
+                configurarEventos();
+            }).catch(erro => {
+                alert('Erro ao conectar ao servidor: ' + erro.message);
+            });
         }
 
         // FUNÇÃO ASYNC PARA CARREGAR DADOS DO SUPABASE
@@ -279,11 +284,11 @@
             tbody.innerHTML = agendamentos.map(a => `
                 <tr>
                     <td>${a.nome}</td>
-                    <td>${a.email}</td>
+                    <td>${a.email || '-'}</td>
                     <td>${a.telefone}</td>
                     <td>${converterDataParaBrasileiro(a.data)}</td>
                     <td>${a.hora}</td>
-                    <td>${a.motivo.substring(0, 30)}...</td>
+                    <td>${(a.motivo || '').substring(0, 30)}...</td>
                     <td><span class="status-badge status-${a.status}">${formatarStatus(a.status)}</span></td>
                     <td>
                         ${a.status === 'pendente' ? `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background-color: #27ae60; color: white; border-radius: 4px; cursor: pointer; border: none;" onclick="confirmarAgendamentoUI('${a.id}')">Confirmar</button>` : ''}
@@ -355,9 +360,9 @@
         window.cancelarAgendamentoUI = async function(id) {
             if (confirm('Cancelar este agendamento?')) {
                 try {
-                    await deletarAgendamento(id);
+                    await atualizarStatusAgendamento(id, 'cancelado');
                     carregarDados();
-                    alert('Agendamento cancelado!');
+                    alert('Agendamento cancelado com sucesso!');
                 } catch (erro) {
                     alert('Erro: ' + erro.message);
                 }
@@ -366,8 +371,11 @@
 
         window.visualizarDetalhes = async function(id) {
             try {
+                // Converter ID para número (vem como string do onclick do HTML)
+                const idNum = parseInt(id, 10);
+                
                 const agendamentos = await obterTodosAgendamentos();
-                const agendamento = agendamentos.find(a => a.id === id);
+                const agendamento = agendamentos.find(a => a.id === idNum);
                 
                 if (agendamento) {
                     alert(`
@@ -382,6 +390,8 @@ Motivo: ${agendamento.motivo}
 Status: ${formatarStatus(agendamento.status)}
 Criado em: ${new Date(agendamento.created_at).toLocaleString('pt-BR')}
                     `);
+                } else {
+                    alert('Agendamento não encontrado');
                 }
             } catch (erro) {
                 alert('Erro ao carregar detalhes: ' + erro.message);
