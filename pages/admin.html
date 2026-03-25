@@ -121,6 +121,7 @@
                                 <th>Data</th>
                                 <th>Hora</th>
                                 <th>Motivo</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaCorpo">
@@ -256,7 +257,7 @@
             const tbody = document.getElementById('tabelaCorpo');
             
             if (agendamentos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Nenhum agendamento registrado</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">Nenhum agendamento registrado</td></tr>';
                 return;
             }
 
@@ -268,6 +269,9 @@
                     <td>${converterDataParaBrasileiro(a.data)}</td>
                     <td>${a.hora}</td>
                     <td>${(a.motivo || '').substring(0, 30)}...</td>
+                    <td>
+                        ${a.status !== 'cancelado' ? `<button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="cancelarAgendamentoAdmin('${a.id}', '${a.nome}')">Cancelar</button>` : '<span style="color: #999;">Cancelado</span>'}
+                    </td>
                 </tr>
             `).join('');
         }
@@ -319,6 +323,20 @@
                 }
             }
         }
+
+        // Funcao para cancelar agendamento individual
+        window.cancelarAgendamentoAdmin = async function(id, nome) {
+            if (confirm('Tem certeza que deseja cancelar o agendamento de ' + nome + '?')) {
+                try {
+                    console.log('Cancelando agendamento ID:', id);
+                    await atualizarStatusAgendamento(id, 'cancelado');
+                    alert('Agendamento cancelado com sucesso!');
+                    carregarDados(); // Recarregar tabela
+                } catch (erro) {
+                    alert('Erro ao cancelar agendamento: ' + erro.message);
+                }
+            }
+        };
     </script>
 </body>
 </html>
