@@ -4,20 +4,6 @@ const SUPABASE_KEY = 'sb_publishable_7-rieCzisyK5_WDG5oJ91g_cG4xHvJs';
 
 // Variável global para o cliente Supabase
 let supabaseClient = null;
-let supabaseLoaded = false;
-let supabaseLoadPromise = null;
-
-// Listener para quando o script Supabase carregar
-window.addEventListener('load', function() {
-    if (typeof window.supabase !== 'undefined') {
-        supabaseLoaded = true;
-        console.log('✓ Supabase carregado com sucesso');
-        // Tentar inicializar se ainda não foi feito
-        if (!supabaseClient) {
-            initSupabaseClient();
-        }
-    }
-});
 
 // Função para aguardar e inicializar o cliente Supabase
 function initSupabaseClient() {
@@ -25,15 +11,14 @@ function initSupabaseClient() {
     
     // Aguardar que a biblioteca Supabase esteja disponível
     if (typeof window.supabase === 'undefined') {
-        console.error('❌ Biblioteca Supabase não está disponível! Verifique a conexão de internet.');
+        console.error('❌ Biblioteca Supabase não está disponível!');
         return null;
     }
     
     try {
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-        supabaseLoaded = true;
-        console.log('✓ Cliente Supabase inicializado');
+        console.log('✓ Cliente Supabase inicializado com sucesso');
         return supabaseClient;
     } catch (error) {
         console.error('❌ Erro ao inicializar Supabase:', error);
@@ -44,49 +29,42 @@ function initSupabaseClient() {
 // Aguardar carregamento da biblioteca Supabase (com retry mais agressivo)
 function ensureSupabaseLoaded() {
     return new Promise((resolve, reject) => {
-        if (typeof window.supabase !== 'undefined') {
+        // Se já está marcado como carregado, resolver imediatamente
+        if (window.supabaseLoaded && typeof window.supabase !== 'undefined') {
             resolve();
             return;
         }
         
-        // Se já está em processo de carregamento, reutilizar a promise
-        if (supabaseLoadPromise) {
-            supabaseLoadPromise.then(resolve).catch(reject);
+        // Se Supabase já está disponível mas flag ainda não foi setada
+        if (typeof window.supabase !== 'undefined') {
+            window.supabaseLoaded = true;
+            resolve();
             return;
         }
         
         let attempts = 0;
-        const maxAttempts = 150; // 15 segundos em vez de 5
+        const maxAttempts = 100; // 10 segundos
         
         const interval = setInterval(() => {
             attempts++;
             
             // Verificar se Supabase carregou
-            if (typeof window.supabase !== 'undefined') {
+            if (window.supabaseLoaded || typeof window.supabase !== 'undefined') {
                 clearInterval(interval);
-                supabaseLoaded = true;
+                window.supabaseLoaded = true;
+                console.log('✓ Supabase finalmente carregou após', attempts, 'tentativas');
                 resolve();
                 return;
             }
             
-            // Timeout: se passou de 15 segundos, falhar
+            // Timeout: se passou de 10 segundos, falhar
             if (attempts >= maxAttempts) {
                 clearInterval(interval);
-                const erro = 'Supabase não carregou após 15 segundos. Verifique sua conexão de internet.';
+                const erro = 'Supabase não carregou após 10 segundos. Verifique sua conexão de internet.';
                 console.error('❌', erro);
                 reject(new Error(erro));
             }
         }, 100);
-        
-        supabaseLoadPromise = new Promise((res, rej) => {
-            setTimeout(() => {
-                if (typeof window.supabase !== 'undefined') {
-                    res();
-                } else {
-                    rej(new Error('Timeout aguardando Supabase'));
-                }
-            }, 15000);
-        });
     });
 }
 

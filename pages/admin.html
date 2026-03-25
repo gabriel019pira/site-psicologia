@@ -5,8 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Gerenciar Agendamentos</title>
     <link rel="stylesheet" href="../css/style.css">
-    <!-- Supabase Library (usando unpkg - não é bloqueado por Tracking Prevention) -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2.38.0/dist/module.umd.js" defer></script>
+    <!-- Loader inline para garantir Supabase carregue ANTES de qualquer outro script -->
+    <script>
+        // Flag global para saber se Supabase carregou
+        window.supabaseLoaded = false;
+        
+        // Tentar carregar Supabase com múltiplos CDNs em paralelo
+        (function loadSupabase() {
+            const cdns = [
+                'https://unpkg.com/@supabase/supabase-js@2.38.0/dist/module.umd.js',
+                'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/module.umd.js',
+                'https://esm.sh/@supabase/supabase-js@2.38.0/dist/module.umd.js'
+            ];
+            
+            let loadedCount = 0;
+            
+            cdns.forEach((cdnUrl, index) => {
+                const script = document.createElement('script');
+                script.src = cdnUrl;
+                script.onload = function() {
+                    if (!window.supabaseLoaded) {
+                        window.supabaseLoaded = true;
+                        console.log('✓ Supabase carregado via:', cdnUrl);
+                    }
+                    loadedCount++;
+                };
+                script.onerror = function() {
+                    console.warn('✗ Falha ao carregar Supabase via:', cdnUrl);
+                    loadedCount++;
+                };
+                document.head.appendChild(script);
+            });
+            
+            // Aguardar qualquer um carregar
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (window.supabaseLoaded || attempts > 100) { // 10 segundos
+                    clearInterval(checkInterval);
+                    if (window.supabaseLoaded) {
+                        console.log('✓ Supabase está pronto!');
+                    } else {
+                        console.error('✗ Supabase não carregou após todas as tentativas');
+                    }
+                }
+            }, 100);
+        })();
+    </script>
 </head>
 <body>
     <!-- Menu Lateral -->
