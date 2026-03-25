@@ -5,34 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Consulta - Psicóloga</title>
     <link rel="stylesheet" href="../css/style.css">
-    <!-- Carregador Supabase com ESM dinâmico -->
+    <!-- Carregador Supabase com ESM dinâmico robusto -->
     <script type="module">
-        // Import dinâmico de Supabase via skypack (que fornece ES modules)
-        let supabaseLib = window.supabase || null;
-        let startupAttempts = 0;
-        const maxAttempts = 3;
-        
         async function loadSupabaseESM() {
             try {
-                console.log('Attempting to load Supabase via ESM...');
-                // skypack fornece UMD y ESM que funciona em browsers antigos
+                console.log('🔄 Loading Supabase from skypack...');
                 const module = await import('https://cdn.skypack.dev/@supabase/supabase-js');
                 
-                // Exportar globalmente
-                window.supabase = module;
+                // Skypack pode retornar um módulo com exports nomeados
+                // Precisamos expor o createClient globalmente
+                window.supabase = {
+                    createClient: module.createClient || module.default?.createClient,
+                    ...module // Aussi expor todas as outras exports
+                };
+                
+                // Verificar se createClient está disponível
+                if (typeof window.supabase.createClient !== 'function') {
+                    throw new Error('createClient não é uma função - module: ' + JSON.stringify(Object.keys(module)));
+                }
+                
                 window.supabaseLoaded = true;
-                console.log('✓✓✓ SUPABASE CARREGOU VIA ESM! ✓✓✓');
+                console.log('✓ Supabase carregou com sucesso!');
+                console.log('✓ createClient disponível:', typeof window.supabase.createClient);
                 return true;
             } catch (error) {
-                console.warn('Skypack failed, trying unpkg...', error.message);
+                console.error('❌ Erro ao carregar Supabase:', error.message);
+                window.supabaseLoaded = false;
                 return false;
             }
         }
         
-        // Carregar na startup
-        loadSupabaseESM().catch(e => {
-            console.error('All Supabase loading methods failed:', e);
-        });
+        // Carregar imediatamente
+        loadSupabaseESM();
     </script>
 </head>
 <body>
