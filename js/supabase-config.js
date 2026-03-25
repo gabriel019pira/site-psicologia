@@ -173,6 +173,41 @@ async function obterAgendamentosPaciente(telefone) {
     }
 }
 
+// Função para obter agendamentos por data e hora
+async function obterAgendamentosPorDataHora(data, hora) {
+    try {
+        console.log('🔍 Buscando agendamentos para data:', data, 'hora:', hora);
+        await ensureSupabaseLoaded();
+        const client = initSupabaseClient();
+        
+        if (!client) {
+            throw new Error('Supabase não inicializou. Verifique sua conexão de internet.');
+        }
+
+        // Buscar todos os agendamentos e filtrar localmente
+        const { data: allData, error } = await client
+            .from('agendamentos')
+            .select('*')
+            .order('data', { ascending: false });
+
+        if (error) {
+            console.error('❌ Erro Supabase ao buscar:', error);
+            throw error;
+        }
+        
+        // Filtrar por data e hora
+        const agendamentosFiltrados = (allData || []).filter(a => 
+            a.data === data && a.hora === hora
+        );
+        
+        console.log(`✓ Encontrados ${agendamentosFiltrados.length} agendamentos para essa data/hora`);
+        return agendamentosFiltrados || [];
+    } catch (error) {
+        console.error('❌ Erro ao obter agendamentos por data/hora:', error);
+        throw error;
+    }
+}
+
 // Função para obter TODOS os agendamentos (admin)
 async function obterTodosAgendamentos() {
     try {
@@ -184,6 +219,7 @@ async function obterTodosAgendamentos() {
             throw new Error('Supabase não inicializou. Verifique sua conexão de internet.');
         }
 
+        console.log('🔄 Fazendo query ao banco de dados...');
         const { data, error } = await client
             .from('agendamentos')
             .select('*')
@@ -191,10 +227,14 @@ async function obterTodosAgendamentos() {
 
         if (error) {
             console.error('❌ Erro Supabase ao buscar todos:', error);
+            console.error('Detalhes do erro:', error.message, error.code, error.details);
             throw error;
         }
         
         console.log(`✓ Carregados ${data?.length || 0} agendamentos`);
+        if (data && data.length > 0) {
+            console.log('📋 Primeiros dados:', data[0]);
+        }
         return data || [];
     } catch (error) {
         console.error('❌ Erro ao obter agendamentos:', error);
