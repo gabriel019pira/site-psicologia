@@ -187,13 +187,42 @@ function formatarData(data) {
 
 // Converter data de input para formato brasileiro
 function converterDataParaBrasileiro(dataISO) {
-    const [ano, mes, dia] = dataISO.split('-');
+    // Validar se é uma string válida
+    if (!dataISO || typeof dataISO !== 'string') {
+        console.warn('Data inválida:', dataISO);
+        return 'Data inválida';
+    }
+    
+    // Se for um objeto Date, converter para string
+    if (dataISO instanceof Date) {
+        dataISO = formatarData(dataISO);
+    }
+    
+    const partes = dataISO.split('-');
+    if (partes.length !== 3) {
+        console.warn('Formato de data inválido:', dataISO);
+        return dataISO; // Retornar como está se não for formato esperado
+    }
+    
+    const [ano, mes, dia] = partes;
     return `${dia}/${mes}/${ano}`;
 }
 
 // Converter data brasileira para ISO
 function converterDataParaISO(dataBrasileira) {
-    const [dia, mes, ano] = dataBrasileira.split('/');
+    // Validar se é uma string válida
+    if (!dataBrasileira || typeof dataBrasileira !== 'string') {
+        console.warn('Data inválida:', dataBrasileira);
+        return '';
+    }
+    
+    const partes = dataBrasileira.split('/');
+    if (partes.length !== 3) {
+        console.warn('Formato de data inválido:', dataBrasileira);
+        return dataBrasileira;
+    }
+    
+    const [dia, mes, ano] = partes;
     return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
 }
 
@@ -204,16 +233,37 @@ function formatarHora(hora) {
 
 // Obter dia da semana em português
 function obterDiaSemana(dataISO) {
-    const data = new Date(dataISO + 'T00:00:00');
-    const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-    return diasSemana[data.getDay()];
+    // Validar entrada
+    if (!dataISO || typeof dataISO !== 'string') {
+        return 'Data inválida';
+    }
+    
+    try {
+        const data = new Date(dataISO + 'T00:00:00');
+        const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const dia = data.getDay();
+        return diasSemana[dia] || 'Data inválida';
+    } catch (e) {
+        console.error('Erro ao obter dia da semana:', e);
+        return 'Data inválida';
+    }
 }
 
 // Verificar se é fim de semana
 function ehFimDeSemana(dataISO) {
-    const data = new Date(dataISO + 'T00:00:00');
-    const dia = data.getDay();
-    return dia === 0 || dia === 6;
+    // Validar entrada
+    if (!dataISO || typeof dataISO !== 'string') {
+        return false;
+    }
+    
+    try {
+        const data = new Date(dataISO + 'T00:00:00');
+        const dia = data.getDay();
+        return dia === 0 || dia === 6;
+    } catch (e) {
+        console.error('Erro ao verificar fim de semana:', e);
+        return false;
+    }
 }
 
 // Inicializar ao carregar o script
