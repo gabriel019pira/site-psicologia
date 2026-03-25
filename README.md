@@ -1,23 +1,108 @@
-# Site de Psicologia - PsiCare
+# 🧠 Site Consultório Psicologia - Franciele Silva
 
-Site completo em HTML para um consultório de psicologia com funcionalidades de agendamento, acompanhamento de agendamentos e painel administrativo.
+Site profissional para consultório de psicologia com sistema de agendamento online integrado com **Supabase** para sincronização em tempo real.
 
-## 📋 Características
+## ✨ Características
 
-✅ **Página Inicial** - Apresentação do consultório e links rápidos
-✅ **Página Sobre** - Informações sobre a psicóloga, formação e áreas de atendimento
-✅ **Sistema de Agendamento** - Marcação de consultas com horários disponíveis
-✅ **Acompanhamento de Agendamentos** - Pacientes acompanham seus agendamentos
-✅ **Painel de Admin** - Gerenciamento completo de agendamentos
-✅ **Página de Contatos** - Formulário de contato e informações de localização
-✅ **Design Responsivo** - Funciona em desktop, tablet e celular
-✅ **Armazenamento Local** - Usa localStorage (sem necessidade de backend)
+✅ **Página Inicial** - Apresentação elegante do consultório com foto e serviços  
+✅ **Sistema de Agendamento** - Marcação de consultas com horários disponíveis  
+✅ **Sincronização em Tempo Real** - Supabase sincroniza agendamentos entre dispositivos  
+✅ **Acompanhamento de Agendamentos** - Pacientes consultam seus agendamentos por telefone  
+✅ **Painel Administrativo** - Gerenciamento completo (confirmar, cancelar, limpar)  
+✅ **Design Responsivo** - Mobile-first, funciona em todos os dispositivos  
+✅ **Base de Dados na Nuvem** - Supabase PostgreSQL para persistência de dados  
 
-## 🗂️ Estrutura do Projeto
+## 🛠️ Tecnologias
+
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Banco de Dados**: Supabase (PostgreSQL)
+- **Hosting**: GitHub Pages
+- **Tema**: Cores profissionais #5B9FBF (azul céu)
+
+## 📂 Estrutura do Projeto
 
 ```
 site-psicologa/
-├── index.html              # Página inicial
+├── index.html                    # Página inicial
+├── css/
+│   └── style.css                # Estilos globais (responsivos)
+├── js/
+│   ├── agendamento.js           # Funções de negócio
+│   └── supabase-config.js       # Cliente Supabase + CRUD
+├── pages/
+│   ├── agendamento.html         # Formulário de agendamento
+│   ├── meus-agendamentos.html   # Consulta agendamentos
+│   ├── admin.html               # Painel administrativo
+│   ├── sobre.html               # Informações da psicóloga
+│   └── contatos.html            # Formulário de contato
+└── README.md
+```
+
+## 🚀 Como Usar
+
+### 1. **Agendar Consulta**
+- Acesse a página "Agendamento"
+- Preencha formulário com dados pessoais
+- Escolha data (segunda a sexta) e horário
+- Agendamento é salvo no Supabase em tempo real
+
+### 2. **Consultar Meus Agendamentos**
+- Acesse "Meus Agendamentos"
+- Digite seu telefone
+- Visualize todos os seus agendamentos
+- Cancele agendamentos futuros se necessário
+
+### 3. **Painel do Admin**
+- Acesse "Administrador"
+- Digite senha: **admin123**
+- Veja estatísticas e lista de agendamentos
+- Confirme ou cancele agendamentos
+- Limpe todos os agendamentos (com confirmação)
+
+## 🔧 Configuração Supabase
+
+O projeto já está configurado com Supabase. Os dados estão em:
+- **Projeto**: dpobhypdzgorabjlkppv
+- **Tabelas**: `agendamentos` e `pacientes`
+
+As credenciais estão em `js/supabase-config.js`
+
+## 📱 Responsividade
+
+- **Desktop**: Layout em grid com sidebar
+- **Tablet**: Layout adaptado
+- **Mobile**: menu hamburger, stack vertical
+
+## 🔐 Segurança
+
+⚠️ **Importante**: 
+- A senha do admin ("admin123") está no código - mude em produção!
+- Use variáveis de ambiente para credenciais sensíveis
+- Implemente autenticação real antes de colocar em produção
+
+## 🌐 GitHub Pages Setup
+
+Para fazer deploy no GitHub Pages:
+
+```bash
+# 1. Crie repositório vazio no GitHub: site-psicologia
+# 2. Adicione remote
+git remote add origin https://github.com/SEU_USUARIO/site-psicologia.git
+
+# 3. Faça push
+git branch -M main
+git push -u origin main
+
+# 4. Ative GitHub Pages
+# Vá em: Settings > Pages > Source: Deploy from branch (main)
+
+# 5. Acesse seu site em:
+# https://SEU_USUARIO.github.io/site-psicologia
+```
+
+## 📝 Licença
+
+© 2026 Franciele Silva - Consultório de Psicologia
 ├── css/
 │   └── style.css          # Estilos globais
 ├── js/
