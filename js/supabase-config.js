@@ -113,6 +113,7 @@ async function registrarAgendamentoSupabase(dados) {
                 nome: dados.nome,
                 email: dados.email,
                 telefone: dados.telefone,
+                cpf: dados.cpf,
                 data: dados.data,
                 hora: dados.hora,
                 motivo: dados.motivo,
@@ -238,6 +239,48 @@ async function obterTodosAgendamentos() {
         return data || [];
     } catch (error) {
         console.error('❌ Erro ao obter agendamentos:', error);
+        throw error;
+    }
+}
+
+// Função para obter agendamentos por CPF do paciente
+async function obterAgendamentosPorCPF(cpf) {
+    try {
+        console.log('🔐 Buscando agendamentos para CPF:', cpf);
+        await ensureSupabaseLoaded();
+        const client = initSupabaseClient();
+        
+        if (!client) {
+            throw new Error('Supabase não inicializou. Verifique sua conexão de internet.');
+        }
+
+        // Normalizar CPF removendo pontuação
+        const cpfNormalizado = cpf.replace(/\D/g, '');
+        
+        if (cpfNormalizado.length !== 11) {
+            throw new Error('CPF deve conter 11 dígitos');
+        }
+
+        console.log('🔄 Fazendo query ao banco de dados...');
+        const { data, error } = await client
+            .from('agendamentos')
+            .select('*')
+            .eq('cpf', cpfNormalizado)
+            .order('data', { ascending: false });
+
+        if (error) {
+            console.error('❌ Erro Supabase ao buscar por CPF:', error);
+            console.error('Detalhes do erro:', error.message, error.code, error.details);
+            throw error;
+        }
+        
+        console.log(`✓ Encontrados ${data?.length || 0} agendamentos para este CPF`);
+        if (data && data.length > 0) {
+            console.log('📋 Primeiro agendamento:', data[0]);
+        }
+        return data || [];
+    } catch (error) {
+        console.error('❌ Erro ao obter agendamentos por CPF:', error);
         throw error;
     }
 }

@@ -5,25 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Agendamentos - Psicóloga</title>
     <link rel="stylesheet" href="../css/style.css">
-    <style>
-        .btn-tab {
-            transition: all 0.3s ease;
-        }
-        .btn-tab:hover {
-            color: #3498db !important;
-        }
-        .btn-tab.ativo {
-            color: #3498db !important;
-            border-bottom: 3px solid #3498db !important;
-        }
-        .aba-conteudo {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-    </style>
     <!-- Carregador Supabase com ESM dinâmico robusto -->
     <script type="module">
         async function loadSupabaseESM() {
@@ -79,57 +60,14 @@
 
             <div id="conteudoPrincipal">
                 <div style="max-width: 600px;">
-                    <!-- Abas de Busca -->
-                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #ddd;">
-                        <button id="abaTelefone" class="btn-tab ativo" style="padding: 0.8rem 1.5rem; border: none; background: none; border-bottom: 3px solid #3498db; cursor: pointer; font-weight: bold; color: #3498db;">Por Telefone</button>
-                        <button id="abaDataHora" class="btn-tab" style="padding: 0.8rem 1.5rem; border: none; background: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: bold; color: #999;">Por Data e Hora</button>
+                    <p style="margin-bottom: 1.5rem;">Para visualizar seus agendamentos, insira seu CPF:</p>
+                    
+                    <div class="form-group">
+                        <label for="cpfPaciente">CPF:</label>
+                        <input type="text" id="cpfPaciente" placeholder="123.456.789-00">
                     </div>
 
-                    <!-- Busca por Telefone -->
-                    <div id="buscarPorTelefone" class="aba-conteudo" style="display: block;">
-                        <p style="margin-bottom: 1.5rem;">Para visualizar seus agendamentos, insira seu telefone:</p>
-                        
-                        <div class="form-group">
-                            <label for="emailPaciente">Telefone:</label>
-                            <input type="tel" id="emailPaciente" placeholder="(19) 99750-5260">
-                        </div>
-
-                        <button id="btnBuscar" class="btn btn-primary">Buscar Agendamentos</button>
-                    </div>
-
-                    <!-- Busca por Data e Hora -->
-                    <div id="buscarPorDataHora" class="aba-conteudo" style="display: none;">
-                        <p style="margin-bottom: 1.5rem;">Busque seu agendamento pela data e hora marcada:</p>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label for="dataBusca">Data:</label>
-                                <input type="date" id="dataBusca">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="horaBusca">Hora:</label>
-                                <select id="horaBusca">
-                                    <option value="">Selecione a hora</option>
-                                    <option value="08:00">08:00</option>
-                                    <option value="08:30">08:30</option>
-                                    <option value="09:00">09:00</option>
-                                    <option value="09:30">09:30</option>
-                                    <option value="10:00">10:00</option>
-                                    <option value="10:30">10:30</option>
-                                    <option value="11:00">11:00</option>
-                                    <option value="14:00">14:00</option>
-                                    <option value="14:30">14:30</option>
-                                    <option value="15:00">15:00</option>
-                                    <option value="15:30">15:30</option>
-                                    <option value="16:00">16:00</option>
-                                    <option value="16:30">16:30</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <button id="btnBuscarDataHora" class="btn btn-primary" style="margin-top: 1rem;">Buscar Agendamento</button>
-                    </div>
+                    <button id="btnBuscar" class="btn btn-primary">Buscar Agendamentos</button>
                 </div>
 
                 <div id="alertaBusca" style="margin-top: 1rem;"></div>
@@ -189,55 +127,22 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             const btnBuscar = document.getElementById('btnBuscar');
-            const btnBuscarDataHora = document.getElementById('btnBuscarDataHora');
-            const emailInput = document.getElementById('emailPaciente');
-            const dataBusca = document.getElementById('dataBusca');
-            const horaBusca = document.getElementById('horaBusca');
+            const cpfInput = document.getElementById('cpfPaciente');
             const alertaBusca = document.getElementById('alertaBusca');
             const conteudoPrincipal = document.getElementById('conteudoPrincipal');
             const containerAgendamentos = document.getElementById('containerAgendamentos');
             const btnVoltar = document.getElementById('btnVoltar');
             const btnNovo = document.getElementById('btnNovo');
 
-            // Abas de busca
-            const abaTelefone = document.getElementById('abaTelefone');
-            const abaDataHora = document.getElementById('abaDataHora');
-            const buscarPorTelefone = document.getElementById('buscarPorTelefone');
-            const buscarPorDataHora = document.getElementById('buscarPorDataHora');
-
-            // Função para trocar abas
-            function trocarAba(abaAtiva, abaInativa, conteudoAtivo, conteudoInativo) {
-                abaAtiva.classList.add('ativo');
-                abaInativa.classList.remove('ativo');
-                abaAtiva.style.borderBottom = '3px solid #3498db';
-                abaInativa.style.borderBottom = '3px solid transparent';
-                abaAtiva.style.color = '#3498db';
-                abaInativa.style.color = '#999';
-                conteudoAtivo.style.display = 'block';
-                conteudoInativo.style.display = 'none';
-            }
-
-            abaTelefone.addEventListener('click', function() {
-                trocarAba(abaTelefone, abaDataHora, buscarPorTelefone, buscarPorDataHora);
-            });
-
-            abaDataHora.addEventListener('click', function() {
-                trocarAba(abaDataHora, abaTelefone, buscarPorDataHora, buscarPorTelefone);
-            });
-
             btnBuscar.addEventListener('click', buscarAgendamentos);
-            emailInput.addEventListener('keypress', function(e) {
+            cpfInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') buscarAgendamentos();
             });
-
-            btnBuscarDataHora.addEventListener('click', buscarAgendamentosPorDataHora);
 
             btnVoltar.addEventListener('click', function() {
                 containerAgendamentos.style.display = 'none';
                 conteudoPrincipal.style.display = 'block';
-                emailInput.value = '';
-                dataBusca.value = '';
-                horaBusca.value = '';
+                cpfInput.value = '';
                 alertaBusca.innerHTML = '';
             });
 
@@ -245,57 +150,28 @@
                 window.location.href = 'agendamento.html';
             });
 
-            // FUNÇÃO ASYNC PARA BUSCAR DO SUPABASE
+            // FUNÇÃO ASYNC PARA BUSCAR POR CPF
             async function buscarAgendamentos() {
-                const telefone = emailInput.value.trim();
+                const cpf = cpfInput.value.trim();
 
-                if (!telefone) {
-                    alertaBusca.innerHTML = '<div class="alert alert-error">Por favor, insira um telefone válido</div>';
+                if (!cpf) {
+                    alertaBusca.innerHTML = '<div class="alert alert-error">Por favor, insira um CPF válido</div>';
                     return;
                 }
 
                 try {
                     alertaBusca.innerHTML = '<div class="alert alert-info">Buscando agendamentos...</div>';
                     
-                    // Buscar agendamentos do Supabase
-                    const agendamentos = await obterAgendamentosPaciente(telefone);
+                    // Buscar agendamentos do Supabase por CPF
+                    const agendamentos = await obterAgendamentosPorCPF(cpf);
 
                     if (agendamentos.length === 0) {
-                        alertaBusca.innerHTML = '<div class="alert alert-info">Nenhum agendamento encontrado para este telefone.</div>';
+                        alertaBusca.innerHTML = '<div class="alert alert-info">Nenhum agendamento encontrado para este CPF.</div>';
                         return;
                     }
 
                     alertaBusca.innerHTML = '';
-                    exibirAgendamentos(telefone, agendamentos);
-                } catch (erro) {
-                    alertaBusca.innerHTML = `<div class="alert alert-error">Erro ao buscar agendamentos: ${erro.message}</div>`;
-                }
-            }
-
-            // FUNÇÃO ASYNC PARA BUSCAR POR DATA E HORA
-            async function buscarAgendamentosPorDataHora() {
-                const data = dataBusca.value;
-                const hora = horaBusca.value;
-
-                if (!data || !hora) {
-                    alertaBusca.innerHTML = '<div class="alert alert-error">Por favor, selecione uma data e hora</div>';
-                    return;
-                }
-
-                try {
-                    alertaBusca.innerHTML = '<div class="alert alert-info">Buscando agendamento...</div>';
-                    
-                    // Buscar agendamentos do Supabase
-                    const agendamentos = await obterAgendamentosPorDataHora(data, hora);
-
-                    if (agendamentos.length === 0) {
-                        alertaBusca.innerHTML = '<div class="alert alert-info">Nenhum agendamento encontrado para essa data e hora.</div>';
-                        return;
-                    }
-
-                    alertaBusca.innerHTML = '';
-                    // Passar data+hora como "chave" de identificação
-                    exibirAgendamentos(`${data} às ${hora}`, agendamentos);
+                    exibirAgendamentos(cpf, agendamentos);
                 } catch (erro) {
                     alertaBusca.innerHTML = `<div class="alert alert-error">Erro ao buscar agendamentos: ${erro.message}</div>`;
                 }
