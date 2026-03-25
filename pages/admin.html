@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gerenciar Agendamentos</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/module.umd.js"></script>
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="nav-menu">
+            <li><a href="../index.html" class="nav-link">Início</a></li>
+            <li><a href="sobre.html" class="nav-link">Sobre</a></li>
+            <li><a href="agendamento.html" class="nav-link">Agendamento</a></li>
+            <li><a href="meus-agendamentos.html" class="nav-link">Meus Agendamentos</a></li>
+            <li><a href="admin.html" class="nav-link active">Administrador</a></li>
+            <li><a href="contatos.html" class="nav-link">Contatos</a></li>
+        </ul>
+    </aside>
+    <button class="menu-toggle" id="menuToggle">☰ Menu</button>
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <div id="loginContainer" style="max-width: 400px; margin: 3rem auto;">
+            <div class="page-content">
+                <h1 style="text-align: center;">Painel Administrativo</h1>
+                
+                <div class="form-group">
+                    <label for="senhaAdmin">Senha de Acesso:</label>
+                    <input type="password" id="senhaAdmin" placeholder="Digite a senha">
+                </div>
+
+                <button id="btnEntrar" class="btn btn-primary" style="width: 100%;">Entrar</button>
+
+                <div id="alertaLogin" style="margin-top: 1rem;"></div>
+            </div>
+        </div>
+
+        <div id="adminContainer" style="display: none;">
+            <div class="page-content">
+                <h1>Painel de Administração</h1>
+
+                <!-- Estatísticas -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="card" style="text-align: center; background: linear-gradient(135deg, #3498db, #2980b9);">
+                        <p style="color: white; margin: 0;">Total de Agendamentos</p>
+                        <strong style="color: white; font-size: 2rem;" id="totalAgendamentos">0</strong>
+                    </div>
+                    <div class="card" style="text-align: center; background: linear-gradient(135deg, #27ae60, #229954);">
+                        <p style="color: white; margin: 0;">Confirmados</p>
+                        <strong style="color: white; font-size: 2rem;" id="totalConfirmados">0</strong>
+                    </div>
+                    <div class="card" style="text-align: center; background: linear-gradient(135deg, #f39c12, #d68910);">
+                        <p style="color: white; margin: 0;">Pendentes</p>
+                        <strong style="color: white; font-size: 2rem;" id="totalPendentes">0</strong>
+                    </div>
+                    <div class="card" style="text-align: center; background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                        <p style="color: white; margin: 0;">Cancelados</p>
+                        <strong style="color: white; font-size: 2rem;" id="totalCancelados">0</strong>
+                    </div>
+                    <div class="card" style="text-align: center; background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                        <p style="color: white; margin: 0;">Pacientes</p>
+                        <strong style="color: white; font-size: 2rem;" id="totalPacientes">0</strong>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                    <h3>Filtrar Agendamentos</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="filtroStatus">Status:</label>
+                            <select id="filtroStatus">
+                                <option value="">Todos</option>
+                                <option value="confirmado">Confirmado</option>
+                                <option value="pendente">Pendente</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="filtroData">Data:</label>
+                            <input type="date" id="filtroData">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="filtroPaciente">Paciente:</label>
+                            <input type="text" id="filtroPaciente" placeholder="Nome ou email">
+                        </div>
+                        <div style="display: flex; align-items: flex-end; gap: 1rem;">
+                            <button id="btnFiltrar" class="btn btn-primary" style="margin: 0;">Filtrar</button>
+                            <button id="btnLimparFiltros" class="btn btn-secondary" style="margin: 0;">Limpar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Agendamentos -->
+                <h2>Agendamentos</h2>
+                <div style="overflow-x: auto;">
+                    <table id="tabelaAgendamentos">
+                        <thead>
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Data</th>
+                                <th>Hora</th>
+                                <th>Motivo</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaCorpo">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button id="btnLimparTodos" class="btn btn-danger">Limpar Todos os Agendamentos</button>
+                    <button id="btnSair" class="btn btn-danger">Sair</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Franciele Silva - Consultório de Psicologia. Todos os direitos reservados.</p>
+            <p>CRP: 12/3456</p>
+        </div>
+    </footer>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/agendamento.js"></script>
+    <script>
+        // Menu toggle para mobile
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            // Mudar ícone do botão
+            if (sidebar.classList.contains('active')) {
+                menuToggle.innerHTML = '✕';
+            } else {
+                menuToggle.innerHTML = '☰ Menu';
+            }
+        });
+        
+        // Fechar sidebar ao clicar em um link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                menuToggle.innerHTML = '☰ Menu';
+            });
+        });
+        
+        const SENHA_ADMIN = 'admin123'; // Mude essa senha em produção!
+        let usuarioLogado = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnEntrar = document.getElementById('btnEntrar');
+            const senhaInput = document.getElementById('senhaAdmin');
+            const alertaLogin = document.getElementById('alertaLogin');
+            const btnSair = document.getElementById('btnSair');
+
+            // Verificar se está em localStorage (simular sessão)
+            if (localStorage.getItem('adminLogado')) {
+                acessoAdmin();
+            }
+
+            btnEntrar.addEventListener('click', function() {
+                if (senhaInput.value === SENHA_ADMIN) {
+                    localStorage.setItem('adminLogado', 'true');
+                    acessoAdmin();
+                } else {
+                    alertaLogin.innerHTML = '<div class="alert alert-error">Senha incorreta!</div>';
+                    senhaInput.value = '';
+                }
+            });
+
+            senhaInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') btnEntrar.click();
+            });
+
+            btnSair.addEventListener('click', function() {
+                localStorage.removeItem('adminLogado');
+                usuarioLogado = false;
+                document.getElementById('loginContainer').style.display = 'block';
+                document.getElementById('adminContainer').style.display = 'none';
+                senhaInput.value = '';
+            });
+        });
+
+        function acessoAdmin() {
+            usuarioLogado = true;
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminContainer').style.display = 'block';
+            carregarDados();
+            configurarEventos();
+        }
+
+        // FUNÇÃO ASYNC PARA CARREGAR DADOS DO SUPABASE
+        async function carregarDados() {
+            try {
+                const agendamentos = await obterTodosAgendamentos();
+                const stats = obterEstatisticas(agendamentos);
+
+                document.getElementById('totalAgendamentos').textContent = stats.total;
+                document.getElementById('totalConfirmados').textContent = stats.confirmado;
+                document.getElementById('totalPendentes').textContent = stats.pendente;
+                document.getElementById('totalCancelados').textContent = stats.cancelado;
+                document.getElementById('totalPacientes').textContent = stats.pacientes;
+
+                exibirTabelaAgendamentos(agendamentos);
+            } catch (erro) {
+                alert('Erro ao carregar agendamentos: ' + erro.message);
+            }
+        }
+
+        function obterEstatisticas(agendamentos) {
+            const pacientes = new Set(agendamentos.map(a => a.email)).size;
+            return {
+                total: agendamentos.length,
+                confirmado: agendamentos.filter(a => a.status === 'confirmado').length,
+                pendente: agendamentos.filter(a => a.status === 'pendente').length,
+                cancelado: agendamentos.filter(a => a.status === 'cancelado').length,
+                pacientes: pacientes
+            };
+        }
+
+        function configurarEventos() {
+            document.getElementById('btnFiltrar').addEventListener('click', aplicarFiltros);
+            document.getElementById('btnLimparFiltros').addEventListener('click', limparFiltros);
+            document.getElementById('btnLimparTodos').addEventListener('click', limparTodosAgendamentos);
+        }
+
+        function exibirTabelaAgendamentos(agendamentos) {
+            const tbody = document.getElementById('tabelaCorpo');
+            
+            if (agendamentos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Nenhum agendamento registrado</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = agendamentos.map(a => `
+                <tr>
+                    <td>${a.nome}</td>
+                    <td>${a.email}</td>
+                    <td>${a.telefone}</td>
+                    <td>${converterDataParaBrasileiro(a.data)}</td>
+                    <td>${a.hora}</td>
+                    <td>${a.motivo.substring(0, 30)}...</td>
+                    <td><span class="status-badge status-${a.status}">${formatarStatus(a.status)}</span></td>
+                    <td>
+                        ${a.status === 'pendente' ? `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background-color: #27ae60; color: white; border-radius: 4px; cursor: pointer; border: none;" onclick="confirmarAgendamentoUI('${a.id}')">Confirmar</button>` : ''}
+                        ${a.status !== 'cancelado' ? `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background-color: #e74c3c; color: white; border-radius: 4px; cursor: pointer; border: none; margin-left: 0.5rem;" onclick="cancelarAgendamentoUI('${a.id}')">Cancelar</button>` : ''}
+                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background-color: #3498db; color: white; border-radius: 4px; cursor: pointer; border: none; margin-left: 0.5rem;" onclick="visualizarDetalhes('${a.id}')">Detalhes</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function formatarStatus(status) {
+            const mapa = {
+                'confirmado': 'Confirmado',
+                'pendente': 'Pendente',
+                'cancelado': 'Cancelado'
+            };
+            return mapa[status] || status;
+        }
+
+        // APLICAR FILTROS COM SUPABASE
+        async function aplicarFiltros() {
+            try {
+                const status = document.getElementById('filtroStatus').value;
+                const data = document.getElementById('filtroData').value;
+                const paciente = document.getElementById('filtroPaciente').value.toLowerCase();
+
+                let agendamentos = await obterTodosAgendamentos();
+
+                if (status) {
+                    agendamentos = agendamentos.filter(a => a.status === status);
+                }
+
+                if (data) {
+                    agendamentos = agendamentos.filter(a => a.data === data);
+                }
+
+                if (paciente) {
+                    agendamentos = agendamentos.filter(a => 
+                        a.nome.toLowerCase().includes(paciente) || 
+                        a.email.toLowerCase().includes(paciente)
+                    );
+                }
+
+                exibirTabelaAgendamentos(agendamentos);
+            } catch (erro) {
+                alert('Erro ao filtrar agendamentos: ' + erro.message);
+            }
+        }
+
+        function limparFiltros() {
+            document.getElementById('filtroStatus').value = '';
+            document.getElementById('filtroData').value = '';
+            document.getElementById('filtroPaciente').value = '';
+            carregarDados();
+        }
+
+        window.confirmarAgendamentoUI = async function(id) {
+            if (confirm('Confirmar este agendamento?')) {
+                try {
+                    await atualizarStatusAgendamento(id, 'confirmado');
+                    carregarDados();
+                    alert('Agendamento confirmado com sucesso!');
+                } catch (erro) {
+                    alert('Erro: ' + erro.message);
+                }
+            }
+        };
+
+        window.cancelarAgendamentoUI = async function(id) {
+            if (confirm('Cancelar este agendamento?')) {
+                try {
+                    await deletarAgendamento(id);
+                    carregarDados();
+                    alert('Agendamento cancelado!');
+                } catch (erro) {
+                    alert('Erro: ' + erro.message);
+                }
+            }
+        };
+
+        window.visualizarDetalhes = async function(id) {
+            try {
+                const agendamentos = await obterTodosAgendamentos();
+                const agendamento = agendamentos.find(a => a.id === id);
+                
+                if (agendamento) {
+                    alert(`
+Detalhes do Agendamento:
+ID: ${agendamento.id}
+Paciente: ${agendamento.nome}
+Email: ${agendamento.email}
+Telefone: ${agendamento.telefone}
+Data: ${converterDataParaBrasileiro(agendamento.data)}
+Hora: ${agendamento.hora}
+Motivo: ${agendamento.motivo}
+Status: ${formatarStatus(agendamento.status)}
+Criado em: ${new Date(agendamento.created_at).toLocaleString('pt-BR')}
+                    `);
+                }
+            } catch (erro) {
+                alert('Erro ao carregar detalhes: ' + erro.message);
+            }
+        };
+
+        async function limparTodosAgendamentos() {
+            if (confirm('ATENÇÃO! Isso irá deletar TODOS os agendamentos registrados NO BANCO DE DADOS.\n\nDeseja continuar?')) {
+                const senha = prompt('Digite a senha do administrador para prosseguir com a limpeza de todos os agendamentos:');
+                if (senha === SENHA_ADMIN) {
+                    try {
+                        await limparTodosAgendamentosSupabase();
+                        alert('✓ Todos os agendamentos foram removidos com sucesso!');
+                        carregarDados();
+                    } catch (erro) {
+                        alert('✗ Erro ao limpar agendamentos: ' + erro.message);
+                    }
+                } else {
+                    alert('✗ Senha incorreta! Operação cancelada.');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

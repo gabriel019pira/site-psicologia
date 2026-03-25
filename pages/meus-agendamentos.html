@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Agendamentos - Psicóloga</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/module.umd.js"></script>
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="nav-menu">
+            <li><a href="../index.html" class="nav-link">Início</a></li>
+            <li><a href="sobre.html" class="nav-link">Sobre</a></li>
+            <li><a href="agendamento.html" class="nav-link">Agendamento</a></li>
+            <li><a href="meus-agendamentos.html" class="nav-link active">Meus Agendamentos</a></li>
+            <li><a href="admin.html" class="nav-link">Administrador</a></li>
+            <li><a href="contatos.html" class="nav-link">Contatos</a></li>
+        </ul>
+    </aside>
+    <button class="menu-toggle" id="menuToggle">☰ Menu</button>
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <div class="page-content">
+            <h1>Meus Agendamentos</h1>
+
+            <div id="conteudoPrincipal">
+                <div style="max-width: 400px;">
+                    <p style="margin-bottom: 1.5rem;">Para visualizar seus agendamentos, insira seu telefone:</p>
+                    
+                    <div class="form-group">
+                        <label for="emailPaciente">Telefone:</label>
+                        <input type="tel" id="emailPaciente" placeholder="(19) 99750-5260">
+                    </div>
+
+                    <button id="btnBuscar" class="btn btn-primary">Buscar Agendamentos</button>
+                </div>
+
+                <div id="alertaBusca" style="margin-top: 1rem;"></div>
+            </div>
+
+            <div id="containerAgendamentos" style="display: none; margin-top: 2rem;">
+                <h2 id="nomePaciente"></h2>
+
+                <div id="resumoAgendamentos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+
+                <h3>Agendamentos Futuros</h3>
+                <div id="agendamentosFuturos"></div>
+
+                <h3 style="margin-top: 2rem;">Agendamentos Passados</h3>
+                <div id="agendamentosPassados"></div>
+
+                <div style="margin-top: 2rem;">
+                    <button id="btnNovo" class="btn btn-primary">Novo Agendamento</button>
+                    <button id="btnVoltar" class="btn btn-secondary" style="margin-left: 1rem;">Voltar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Franciele Silva - Consultório de Psicologia. Todos os direitos reservados.</p>
+            <p>CRP: 12/3456</p>
+        </div>
+    </footer>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/agendamento.js"></script>
+    <script>
+        // Menu toggle para mobile
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            // Mudar ícone do botão
+            if (sidebar.classList.contains('active')) {
+                menuToggle.innerHTML = '✕';
+            } else {
+                menuToggle.innerHTML = '☰ Menu';
+            }
+        });
+        
+        // Fechar sidebar ao clicar em um link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                menuToggle.innerHTML = '☰ Menu';
+            });
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnBuscar = document.getElementById('btnBuscar');
+            const emailInput = document.getElementById('emailPaciente');
+            const alertaBusca = document.getElementById('alertaBusca');
+            const conteudoPrincipal = document.getElementById('conteudoPrincipal');
+            const containerAgendamentos = document.getElementById('containerAgendamentos');
+            const btnVoltar = document.getElementById('btnVoltar');
+            const btnNovo = document.getElementById('btnNovo');
+
+            btnBuscar.addEventListener('click', buscarAgendamentos);
+            emailInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') buscarAgendamentos();
+            });
+
+            btnVoltar.addEventListener('click', function() {
+                containerAgendamentos.style.display = 'none';
+                conteudoPrincipal.style.display = 'block';
+                emailInput.value = '';
+                alertaBusca.innerHTML = '';
+            });
+
+            btnNovo.addEventListener('click', function() {
+                window.location.href = 'agendamento.html';
+            });
+
+            // FUNÇÃO ASYNC PARA BUSCAR DO SUPABASE
+            async function buscarAgendamentos() {
+                const telefone = emailInput.value.trim();
+
+                if (!telefone) {
+                    alertaBusca.innerHTML = '<div class="alert alert-error">Por favor, insira um telefone válido</div>';
+                    return;
+                }
+
+                try {
+                    alertaBusca.innerHTML = '<div class="alert alert-info">Buscando agendamentos...</div>';
+                    
+                    // Buscar agendamentos do Supabase
+                    const agendamentos = await obterAgendamentosPaciente(telefone);
+
+                    if (agendamentos.length === 0) {
+                        alertaBusca.innerHTML = '<div class="alert alert-info">Nenhum agendamento encontrado para este telefone.</div>';
+                        return;
+                    }
+
+                    alertaBusca.innerHTML = '';
+                    exibirAgendamentos(telefone, agendamentos);
+                } catch (erro) {
+                    alertaBusca.innerHTML = `<div class="alert alert-error">Erro ao buscar agendamentos: ${erro.message}</div>`;
+                }
+            }
+
+            function exibirAgendamentos(email, agendamentos) {
+                conteudoPrincipal.style.display = 'none';
+                containerAgendamentos.style.display = 'block';
+
+                const pacienteNome = agendamentos[0].nome;
+                document.getElementById('nomePaciente').textContent = `Agendamentos de ${pacienteNome}`;
+
+                // Separar agendamentos futuros e passados
+                const hoje = new Date().toISOString().split('T')[0];
+                const futuros = agendamentos.filter(a => a.data >= hoje && a.status !== 'cancelado').sort((a, b) => new Date(a.data) - new Date(b.data));
+                const passados = agendamentos.filter(a => a.data < hoje || a.status === 'cancelado').sort((a, b) => new Date(b.data) - new Date(a.data));
+
+                // Resumo
+                const resumoDiv = document.getElementById('resumoAgendamentos');
+                resumoDiv.innerHTML = `
+                    <div class="card" style="text-align: center;">
+                        <strong style="color: var(--secondary-color); font-size: 1.5rem;">${agendamentos.length}</strong>
+                        <p>Total</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <strong style="color: #27ae60; font-size: 1.5rem;">${futuros.length}</strong>
+                        <p>Próximas</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <strong style="color: #f39c12; font-size: 1.5rem;">${agendamentos.filter(a => a.status === 'pendente').length}</strong>
+                        <p>Pendentes</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <strong style="color: #e74c3c; font-size: 1.5rem;">${agendamentos.filter(a => a.status === 'cancelado').length}</strong>
+                        <p>Cancelados</p>
+                    </div>
+                `;
+
+                // Agendamentos futuros
+                const futDiv = document.getElementById('agendamentosFuturos');
+                if (futuros.length === 0) {
+                    futDiv.innerHTML = '<p style="color: #999;">Nenhum agendamento futuro.</p>';
+                } else {
+                    futDiv.innerHTML = futuros.map(a => criarCardAgendamento(a)).join('');
+                }
+
+                // Agendamentos passados
+                const passDiv = document.getElementById('agendamentosPassados');
+                if (passados.length === 0) {
+                    passDiv.innerHTML = '<p style="color: #999;">Nenhum agendamento passado.</p>';
+                } else {
+                    passDiv.innerHTML = passados.map(a => criarCardAgendamento(a, true)).join('');
+                }
+            }
+
+            function criarCardAgendamento(agendamento, passado = false) {
+                const dataBR = converterDataParaBrasileiro(agendamento.data);
+                const diaSemana = obterDiaSemana(agendamento.data);
+                
+                let statusClass = '';
+                let statusTexto = '';
+                if (agendamento.status === 'confirmado') {
+                    statusClass = 'status-confirmado';
+                    statusTexto = 'Confirmado';
+                } else if (agendamento.status === 'pendente') {
+                    statusClass = 'status-pendente';
+                    statusTexto = 'Pendente';
+                } else if (agendamento.status === 'cancelado') {
+                    statusClass = 'status-cancelado';
+                    statusTexto = 'Cancelado';
+                }
+
+                return `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="color: var(--secondary-color); margin-bottom: 0.5rem;">${dataBR} - ${agendamento.hora}</h4>
+                                <p style="color: #666; margin-bottom: 0.3rem;"><strong>${diaSemana}</strong></p>
+                            </div>
+                            <span class="status-badge ${statusClass}">${statusTexto}</span>
+                        </div>
+                        <p style="margin-bottom: 0.5rem;"><strong>Motivo:</strong> ${agendamento.motivo}</p>
+                        <p style="color: #999; font-size: 0.9rem;"><strong>ID:</strong> ${agendamento.id}</p>
+                        ${!passado && agendamento.status !== 'cancelado' ? `
+                            <button class="btn btn-danger" style="margin-top: 1rem; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="cancelarAgendamentoUI('${agendamento.id}')">Cancelar Agendamento</button>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            window.cancelarAgendamentoUI = async function(id) {
+                if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
+                    try {
+                        await deletarAgendamento(id);
+                        buscarAgendamentos();
+                    } catch (erro) {
+                        alert('Erro ao cancelar agendamento: ' + erro.message);
+                    }
+                }
+            };
+        });
+    </script>
+</body>
+</html>

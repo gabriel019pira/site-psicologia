@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contatos - Psicóloga</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="nav-menu">
+            <li><a href="../index.html" class="nav-link">Início</a></li>
+            <li><a href="sobre.html" class="nav-link">Sobre</a></li>
+            <li><a href="agendamento.html" class="nav-link">Agendamento</a></li>
+            <li><a href="meus-agendamentos.html" class="nav-link">Meus Agendamentos</a></li>
+            <li><a href="admin.html" class="nav-link">Administrador</a></li>
+            <li><a href="contatos.html" class="nav-link active">Contatos</a></li>
+        </ul>
+    </aside>
+    <button class="menu-toggle" id="menuToggle">☰ Menu</button>
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <div class="page-content">
+            <h1>Entre em contato com a Profissional</h1>
+
+            <!-- Informações de Contato em Grid -->
+            <h2>Informações de Contato</h2>
+            <div class="contact-cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📍 Endereço</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Rua Joaquim Andre, 1540<br>
+                        Piracicaba - SP<br>
+                        CEP: 13401-544</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📱 Telefone</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Principal:</strong> (19) 99750-5260<br>
+                        <strong>Clínica:</strong> (19) 98370-4433</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📧 Email</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><a href="mailto:franciele.psirh@gmail.com" style="color: var(--secondary-color); font-weight: bold;">franciele.psirh@gmail.com</a></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🕒 Horário de Atendimento</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Segunda a Sexta:</strong> 08h00 às 17h00</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 2rem;">Redes Sociais</h2>
+            <div class="contact-cards-grid" style="grid-template-columns: 1fr;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Siga-nos nas Redes Sociais</h3>
+                    </div>
+                    <div class="card-body" style="text-align: center; padding: 2rem;">
+                        <p style="margin-bottom: 1.5rem;">Dicas e conteúdo sobre saúde mental:</p>
+                        <div style="display: flex; justify-content: center; gap: 2rem;">
+                            <a href="https://www.linkedin.com/in/francielesilvaa/" target="_blank" style="color: #0077b5; text-decoration: none; font-size: 1.2rem; font-weight: bold;">🔗 LinkedIn</a>
+                            <a href="https://wa.me/5519983704433" target="_blank" style="color: #25d366; text-decoration: none; font-size: 1.2rem; font-weight: bold;">💬 WhatsApp</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <h2 style="margin-top: 2rem;">Informações Importantes</h2>
+            <div style="margin-top: 1rem; background-color: var(--light-bg); padding: 2rem; border-radius: var(--border-radius); border-left: 4px solid var(--secondary-color);">
+                <ul>
+                    <li><strong>Confidencialidade:</strong> Todas as informações compartilhadas conosco são confidenciais.</li>
+                    <li><strong>Resposta:</strong> Respondemos mensagens de contato em até 24 horas úteis.</li>
+                    <li><strong>Emergência:</strong> Em caso de emergência psicológica, ligue para o CVV: 188</li>
+                    <li><strong>Profissionalismo:</strong> Atendemos conforme os códigos de ética da profissão.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Franciele Silva - Consultório de Psicologia. Todos os direitos reservados.</p>
+            <p>CRP: 12/3456</p>
+        </div>
+    </footer>
+
+    <script>
+        // Menu toggle para mobile
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            // Mudar ícone do botão
+            if (sidebar.classList.contains('active')) {
+                menuToggle.innerHTML = '✕';
+            } else {
+                menuToggle.innerHTML = '☰ Menu';
+            }
+        });
+        
+        // Fechar sidebar ao clicar em um link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                menuToggle.innerHTML = '☰ Menu';
+            });
+        });
+
+    </script>
+
+    <style>
+        ul {
+            list-style-position: inside;
+        }
+
+        ul li {
+            margin-bottom: 0.5rem;
+            line-height: 1.8;
+        }
+
+        a {
+            transition: opacity 0.3s;
+        }
+
+        a:hover {
+            opacity: 0.8;
+        }
+    </style>
+</body>
+</html>

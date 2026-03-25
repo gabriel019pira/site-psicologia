@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psicóloga - Seu Bem-Estar Mental é Nossa Prioridade</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header com foto-fundo -->
+    <header class="page-header" style="background-image: url('foto-fundo.jpg');">
+        <button class="menu-toggle" id="menuToggle">☰ Menu</button>
+    </header>
+
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link active">Início</a></li>
+            <li><a href="pages/sobre.html" class="nav-link">Sobre</a></li>
+            <li><a href="pages/agendamento.html" class="nav-link">Agendamento</a></li>
+            <li><a href="pages/meus-agendamentos.html" class="nav-link">Meus Agendamentos</a></li>
+            <li><a href="pages/admin.html" class="nav-link">Administrador</a></li>
+            <li><a href="pages/contatos.html" class="nav-link">Contatos</a></li>
+        </ul>
+    </aside>
+
+    <!-- Hero Section -->
+    <section class="hero" style="display: none;">
+        <div class="container hero-content">
+        </div>
+    </section>
+
+    <!-- Sobre Prévia -->
+    <section class="about-preview">
+        <div class="container">
+            <div class="about-psychologist-card">
+                <img src="foto-sobre mim.jpg" alt="Franciele Silva" />
+                <div class="about-psychologist-content">
+                    <h3>Sobre a Psicóloga</h3>
+                    <p>Sou Psicóloga, com sólida experiência na área de Recursos Humanos, especialmente em Recrutamento e Seleção, e vivência no setor administrativo. Minha formação em Psicologia, aliada aos estudos contínuos em Terapia Cognitivo-Comportamental, amplia meu olhar analítico, minha capacidade de tomada de decisão, comunicação assertiva e gestão de pessoas, competências essenciais tanto no RH quanto em rotinas administrativas.</p>
+                    <a href="pages/sobre.html" class="btn btn-secondary">Saiba Mais</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Áreas de Atendimento -->
+    <section class="about-preview">
+        <div class="container">
+            <div class="services-card">
+                <div class="services-content">
+                    <h3>Áreas de Atendimento</h3>
+                    <p>Clique em cada especialidade para descobrir mais detalhes</p>
+                    <div class="services-list">
+                        <div class="service-item">
+                            <p class="service-title">Terapia Cognitivo-Comportamental (TCC)</p>
+                            <p class="service-description">Terapia Cognitivo-Comportamental (TCC) é uma abordagem psicoterapêutica focada na relação entre pensamentos, emoções e comportamentos. Seu objetivo é identificar padrões de pensamento negativos ou distorcidos que influenciam as emoções e ações, ajudando o indivíduo a substituí-los por formas mais equilibradas e saudáveis de pensar.</p>
+                        </div>
+                        <div class="service-item">
+                            <p class="service-title">TDAH</p>
+                            <p class="service-description">O Transtorno do Déficit de Atenção com Hiperatividade (TDAH) é uma condição do neurodesenvolvimento caracterizada por dificuldades de atenção, impulsividade e, em alguns casos, hiperatividade. Esses sintomas podem impactar o desempenho escolar, profissional e as relações pessoais.</p>
+                        </div>
+                        <div class="service-item">
+                            <p class="service-title">Transtorno Borderline</p>
+                            <p class="service-description">O Transtorno de Personalidade Borderline (TPB) é uma condição de saúde mental caracterizada por instabilidade emocional intensa, mudanças rápidas de humor, dificuldades nos relacionamentos e uma autoimagem instável. Pessoas com esse transtorno podem apresentar impulsividade e um medo acentuado de abandono.</p>
+                        </div>
+                        <div class="service-item">
+                            <p class="service-title">Transtorno Bipolar</p>
+                            <p class="service-description">O Transtorno Bipolar é uma condição de saúde mental caracterizada por alterações intensas de humor, que variam entre episódios de depressão e períodos de euforia ou irritabilidade (mania ou hipomania). Essas mudanças podem afetar o comportamento, a energia, o sono e a capacidade de realizar atividades do dia a dia.</p>
+                        </div>
+                        <div class="service-item">
+                            <p class="service-title">Transtorno Espectro Autista</p>
+                            <p class="service-description">O Transtorno do Espectro Autista (TEA) é uma condição do neurodesenvolvimento caracterizada por diferenças na comunicação, na interação social e no comportamento. Pessoas com TEA podem apresentar interesses restritos, padrões repetitivos e diferentes formas de perceber e interagir com o mundo.</p>
+                        </div>
+                        <div class="service-item">
+                            <p class="service-title">Atendimento Familiar e de Casal</p>
+                            <p class="service-description">O atendimento familiar e de casal é uma abordagem terapêutica voltada para melhorar a comunicação, fortalecer vínculos e resolver conflitos dentro das relações. Ele proporciona um espaço seguro e acolhedor para que os envolvidos possam expressar sentimentos, compreender diferentes perspectivas e construir soluções conjuntas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Franciele Silva - Consultório de Psicologia. Todos os direitos reservados.</p>
+            <p>CRP: 12/3456</p>
+        </div>
+    </footer>
+    </main>
+
+    <script src="js/agendamento.js"></script>
+    <script>
+        // Menu toggle para mobile
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            // Mudar ícone do botão
+            if (sidebar.classList.contains('active')) {
+                menuToggle.innerHTML = '✕';
+            } else {
+                menuToggle.innerHTML = '☰ Menu';
+            }
+        });
+        
+        // Fechar sidebar ao clicar em um link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                menuToggle.innerHTML = '☰ Menu';
+            });
+        });
+
+        // Interatividade do card de áreas de atendimento
+        const serviceItems = document.querySelectorAll('.service-item');
+        serviceItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove a classe active de todos os itens
+                serviceItems.forEach(i => i.classList.remove('active'));
+                // Adiciona a classe active ao item clicado
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

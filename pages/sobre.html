@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre - Psicóloga</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="nav-menu">
+            <li><a href="../index.html" class="nav-link">Início</a></li>
+            <li><a href="sobre.html" class="nav-link active">Sobre</a></li>
+            <li><a href="agendamento.html" class="nav-link">Agendamento</a></li>
+            <li><a href="meus-agendamentos.html" class="nav-link">Meus Agendamentos</a></li>
+            <li><a href="admin.html" class="nav-link">Administrador</a></li>
+            <li><a href="contatos.html" class="nav-link">Contatos</a></li>
+        </ul>
+    </aside>
+    <button class="menu-toggle" id="menuToggle">☰ Menu</button>
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <div class="page-content">
+            <h1>Sobre</h1>
+
+            <div class="about-section">
+                <h2>Franciele Silva</h2>
+                
+                <p>Sou Psicóloga, com sólida experiência na área de Recursos Humanos, especialmente em Recrutamento e Seleção, e vivência no setor administrativo. Minha formação em Psicologia, aliada aos estudos contínuos em Terapia Cognitivo-Comportamental, amplia meu olhar analítico, minha capacidade de tomada de decisão, comunicação assertiva e gestão de pessoas, competências essenciais tanto no RH quanto em rotinas administrativas.</p>
+
+                <p>Tenho um perfil organizado, responsável e orientado a processos. Ao longo da minha trajetória no administrativo, desenvolvi habilidades em organização e controle de documentos, atendimento ao cliente, comunicação verbal e escrita, além de suporte a rotinas internas com foco em eficiência e qualidade.</p>
+
+                <p>Acredito que carreira se constrói com conhecimento, por isso mantenho uma postura constante de atualização por meio de cursos, leituras e estudos. Essa base teórica e prática me permite atuar de forma estratégica, ética e humanizada nos ambientes em que estou inserida.</p>
+
+                <p>Atualmente, busco oportunidades em regime Home Office, nas áreas de Recursos Humanos ou Administrativo, onde eu possa contribuir com organização, análise, responsabilidade e visão psicológica aplicada ao trabalho.</p>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Áreas de Especialização</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul style="margin-left: 1rem; margin-top: 1rem;">
+                            <li>Terapia Cognitivo-Comportamental (TCC)</li>
+                            <li>TDHA</li>
+                            <li>Transtorno Borderline</li>
+                            <li>Transtorno Bipolar</li>
+                            <li>Transtorno Espectro Autista</li>
+                            <li>Atendimento Familiar e de Casal</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Franciele Silva - Consultório de Psicologia. Todos os direitos reservados.</p>
+            <p>CRP: 12/3456</p>
+        </div>
+    </footer>
+
+    <style>
+        .about-section {
+            margin-top: 2rem;
+        }
+
+        .about-section h2 {
+            color: var(--secondary-color);
+            margin: 1.5rem 0 0.5rem 0;
+            font-size: 1.8rem;
+        }
+
+        .about-section > p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: #666;
+        }
+
+        ul {
+            list-style-position: inside;
+        }
+
+        ul li {
+            margin-bottom: 0.5rem;
+            line-height: 1.8;
+        }
+    </style>
+    <script src="../js/agendamento.js"></script>
+    <script>
+        // Menu toggle para mobile
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            // Mudar ícone do botão
+            if (sidebar.classList.contains('active')) {
+                menuToggle.innerHTML = '✕';
+            } else {
+                menuToggle.innerHTML = '☰ Menu';
+            }
+        });
+        
+        // Fechar sidebar ao clicar em um link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                menuToggle.innerHTML = '☰ Menu';
+            });
+        });
+    </script>
+</body>
+</html>
