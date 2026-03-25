@@ -265,51 +265,50 @@ async function obterAgendamentosPorCPF(cpf) {
 
         // Normalizar CPF removendo pontuação
         const cpfNormalizado = cpf.replace(/\D/g, '');
-        console.log('📌 CPF normalizado:', cpfNormalizado);
+        console.log('📌 CPF normalizado para busca:', cpfNormalizado);
         
         if (cpfNormalizado.length !== 11) {
             throw new Error('CPF deve conter 11 dígitos');
         }
 
-        console.log('🔄 Fazendo query ao banco de dados...');
+        console.log('🔄 Buscando TODOS os agendamentos do banco...');
         
-        // DEBUG: Primeiro, buscar TODOS os agendamentos para ver o que existe
-        const { data: todosDados } = await client
-            .from('agendamentos')
-            .select('*');
-        
-        console.log('📊 Total de agendamentos no banco:', todosDados?.length || 0);
-        if (todosDados && todosDados.length > 0) {
-            console.log('📋 Amostra de dados (primeiros 3):');
-            todosDados.slice(0, 3).forEach((a, i) => {
-                console.log(`  [${i}] ID: ${a.id}, CPF: "${a.cpf}", Nome: ${a.nome}, Data: ${a.data}`);
-            });
-        }
-        
-        // Agora fazer a query real filtrando por CPF
-        const { data, error } = await client
+        // Buscar TODOS os agendamentos
+        const { data: todosDados, error } = await client
             .from('agendamentos')
             .select('*')
-            .eq('cpf', cpfNormalizado)
             .order('data', { ascending: false });
 
         if (error) {
-            console.error('❌ Erro Supabase ao buscar por CPF:', error);
+            console.error('❌ Erro Supabase ao buscar:', error);
             console.error('Detalhes do erro:', error.message, error.code, error.details);
             throw error;
         }
         
-        console.log(`✅ Encontrados ${data?.length || 0} agendamentos para CPF ${cpfNormalizado}`);
-        if (data && data.length > 0) {
-            data.forEach((a, i) => {
-                console.log(`  [${i}] ${a.nome} - ${a.data} ${a.hora} - Motivo: ${a.motivo}`);
+        console.log(`📊 Total de agendamentos no banco: ${todosDados?.length || 0}`);
+        
+        // Filtrar localmente normalizando AMBOS os lados
+        const agendamentosFiltrados = (todosDados || []).filter(a => {
+            const cpfDoBanco = (a.cpf || '').replace(/\D/g, '');
+            const encontrou = cpfDoBanco === cpfNormalizado;
+            
+            if (encontrou) {
+                console.log(`✓ ENCONTRADO: ID ${a.id}, CPF banco="${a.cpf}" vs busca="${cpfNormalizado}"`);
+            }
+            
+            return encontrou;
+        });
+        
+        console.log(`✅ Encontrados ${agendamentosFiltrados.length} agendamentos para CPF ${cpfNormalizado}`);
+        if (agendamentosFiltrados.length > 0) {
+            agendamentosFiltrados.forEach((a, i) => {
+                console.log(`  [${i}] ${a.nome} - ${a.data} ${a.hora} - ID: ${a.id}`);
             });
         } else {
-            console.warn('⚠️ Nenhum agendamento encontrado. CPF buscado:', cpfNormalizado);
-            console.log('💡 Dica: Verifique se os agendamentos têm o CPF preenchido corretamente no banco');
+            console.warn('⚠️ Nenhum agendamento encontrado para este CPF');
         }
         
-        return data || [];
+        return agendamentosFiltrados || [];
     } catch (error) {
         console.error('❌ Erro ao obter agendamentos por CPF:', error);
         throw error;
