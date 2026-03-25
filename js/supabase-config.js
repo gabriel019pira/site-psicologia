@@ -7,6 +7,11 @@ function normalizarTelefone(telefone) {
     return telefone.replace(/\D/g, ''); // Remove tudo que não seja dígito
 }
 
+// Função para normalizar CPF (remove formatação para comparação)
+function normalizarCPF(cpf) {
+    return cpf.replace(/\D/g, ''); // Remove tudo que não seja dígito
+}
+
 // Variável global para o cliente Supabase
 let supabaseClient = null;
 
@@ -107,13 +112,17 @@ async function registrarAgendamentoSupabase(dados) {
         }
 
         // Inserir agendamento
+        // Normalizar CPF antes de salvar (remover formatação)
+        const cpfNormalizado = normalizarCPF(dados.cpf);
+        console.log('✓ CPF normalizado para gravação:', cpfNormalizado);
+        
         const { data, error } = await client
             .from('agendamentos')
             .insert([{
                 nome: dados.nome,
                 email: dados.email,
                 telefone: dados.telefone,
-                cpf: dados.cpf,
+                cpf: cpfNormalizado,
                 data: dados.data,
                 hora: dados.hora,
                 motivo: dados.motivo,
