@@ -1,13 +1,11 @@
--- Adicionar coluna CPF à tabela agendamentos
+-- Migration: Adicionar suporte a autenticação por CPF
 -- Execute esta query no Supabase SQL Editor
 
-ALTER TABLE agendamentos ADD COLUMN cpf TEXT;
+-- Criar índice no CPF da tabela agendamentos (se não existir)
+CREATE INDEX IF NOT EXISTS idx_agendamentos_cpf ON agendamentos(cpf);
 
--- Criar índice no CPF para queries rápidas
-CREATE INDEX idx_agendamentos_cpf ON agendamentos(cpf);
+-- Adicionar CPF à tabela pacientes (se não existir)
+ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS cpf TEXT UNIQUE;
 
--- Adicionar CPF à tabela pacientes também
-ALTER TABLE pacientes ADD COLUMN cpf TEXT UNIQUE;
-
--- Criar índice no CPF dos pacientes
-CREATE INDEX idx_pacientes_cpf ON pacientes(cpf);
+-- Criar índice no CPF dos pacientes (se não existir)
+CREATE INDEX IF NOT EXISTS idx_pacientes_cpf ON pacientes(cpf);
