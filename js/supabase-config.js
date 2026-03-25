@@ -265,12 +265,28 @@ async function obterAgendamentosPorCPF(cpf) {
 
         // Normalizar CPF removendo pontuação
         const cpfNormalizado = cpf.replace(/\D/g, '');
+        console.log('📌 CPF normalizado:', cpfNormalizado);
         
         if (cpfNormalizado.length !== 11) {
             throw new Error('CPF deve conter 11 dígitos');
         }
 
         console.log('🔄 Fazendo query ao banco de dados...');
+        
+        // DEBUG: Primeiro, buscar TODOS os agendamentos para ver o que existe
+        const { data: todosDados } = await client
+            .from('agendamentos')
+            .select('*');
+        
+        console.log('📊 Total de agendamentos no banco:', todosDados?.length || 0);
+        if (todosDados && todosDados.length > 0) {
+            console.log('📋 Amostra de dados (primeiros 3):');
+            todosDados.slice(0, 3).forEach((a, i) => {
+                console.log(`  [${i}] ID: ${a.id}, CPF: "${a.cpf}", Nome: ${a.nome}, Data: ${a.data}`);
+            });
+        }
+        
+        // Agora fazer a query real filtrando por CPF
         const { data, error } = await client
             .from('agendamentos')
             .select('*')
@@ -283,10 +299,16 @@ async function obterAgendamentosPorCPF(cpf) {
             throw error;
         }
         
-        console.log(`✓ Encontrados ${data?.length || 0} agendamentos para este CPF`);
+        console.log(`✅ Encontrados ${data?.length || 0} agendamentos para CPF ${cpfNormalizado}`);
         if (data && data.length > 0) {
-            console.log('📋 Primeiro agendamento:', data[0]);
+            data.forEach((a, i) => {
+                console.log(`  [${i}] ${a.nome} - ${a.data} ${a.hora} - Motivo: ${a.motivo}`);
+            });
+        } else {
+            console.warn('⚠️ Nenhum agendamento encontrado. CPF buscado:', cpfNormalizado);
+            console.log('💡 Dica: Verifique se os agendamentos têm o CPF preenchido corretamente no banco');
         }
+        
         return data || [];
     } catch (error) {
         console.error('❌ Erro ao obter agendamentos por CPF:', error);
