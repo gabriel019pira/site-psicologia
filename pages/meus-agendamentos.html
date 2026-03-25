@@ -5,48 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Agendamentos - Psicóloga</title>
     <link rel="stylesheet" href="../css/style.css">
-    <!-- Loader inline para garantir Supabase carregue ANTES de qualquer outro script -->
+    <!-- Carregador Supabase com múltiplos CDNs e versões - VERSÃO ESTÁVEL -->
     <script>
-        // Flag global para saber se Supabase carregou
         window.supabaseLoaded = false;
         
-        // Tentar carregar Supabase com múltiplos CDNs em paralelo
         (function loadSupabase() {
+            // Múltiplas opções de CDN + versões que funcionam
             const cdns = [
-                'https://unpkg.com/@supabase/supabase-js@2.38.0/dist/module.umd.js',
-                'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/module.umd.js',
-                'https://esm.sh/@supabase/supabase-js@2.38.0/dist/module.umd.js'
+                // Versão sem especificar = latest
+                'https://unpkg.com/@supabase/supabase-js/dist/module.umd.js',
+                'https://unpkg.com/@supabase/supabase-js@^2/dist/module.umd.js',
+                // Versão 2.39.0 (mais recente disponível)
+                'https://unpkg.com/@supabase/supabase-js@2.39.0/dist/module.umd.js',
+                // Fallback esm.sh
+                'https://esm.sh/stable/@supabase/supabase-js',
+                // Outro fallback
+                'https://deno.land/x/supabase_js@v2.39.0/mod.ts'
             ];
             
-            let loadedCount = 0;
+            let loaded = false;
+            let successCount = 0;
             
-            cdns.forEach((cdnUrl, index) => {
+            cdns.forEach((cdnUrl) => {
                 const script = document.createElement('script');
                 script.src = cdnUrl;
+                script.async = true;
+                
                 script.onload = function() {
-                    if (!window.supabaseLoaded) {
-                        window.supabaseLoaded = true;
-                        console.log('✓ Supabase carregado via:', cdnUrl);
-                    }
-                    loadedCount++;
+                    // Aguardar um pouco para a biblioteca se registrar no window
+                    setTimeout(() => {
+                        if (!loaded && typeof window.supabase !== 'undefined') {
+                            loaded = true;
+                            window.supabaseLoaded = true;
+                            successCount++;
+                            console.log('✓ Supabase FINALMENTE carregou via:', cdnUrl);
+                            console.log('✓ window.supabase disponível:', !!window.supabase);
+                        }
+                    }, 100);
                 };
+                
                 script.onerror = function() {
-                    console.warn('✗ Falha ao carregar Supabase via:', cdnUrl);
-                    loadedCount++;
+                    console.warn('⚠️ CDN falhou:', cdnUrl);
                 };
+                
                 document.head.appendChild(script);
             });
             
-            // Aguardar qualquer um carregar
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (window.supabaseLoaded || attempts > 100) { // 10 segundos
-                    clearInterval(checkInterval);
-                    if (window.supabaseLoaded) {
-                        console.log('✓ Supabase está pronto!');
-                    } else {
-                        console.error('✗ Supabase não carregou após todas as tentativas');
+            // Verificar status de carregamento
+            let checkCount = 0;
+            const statusCheck = setInterval(() => {
+                checkCount++;
+                
+                if (window.supabaseLoaded && typeof window.supabase !== 'undefined') {
+                    clearInterval(statusCheck);
+                    console.log('✓✓✓ SUPABASE CARREGOU COM SUCESSO! ✓✓✓');
+                    return;
+                }
+                
+                // Mensagem a cada 1 segundo
+                if (checkCount % 10 === 0) {
+                    console.log(`⏳ Aguardando Supabase... (${checkCount/10}s)`);
+                }
+                
+                // Timeout após 20 segundos
+                if (checkCount > 200) {
+                    clearInterval(statusCheck);
+                    if (!window.supabaseLoaded) {
+                        console.error('❌ Supabase falhou após 20 segundos. Todos os CDNs rejeitaram.');
+                        console.error('Nenhum CDN foi bem-sucedido. Verifique sua conexão ou tente modo incógnito.');
                     }
                 }
             }, 100);
