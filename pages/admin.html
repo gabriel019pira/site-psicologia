@@ -84,14 +84,6 @@
                         <p style="color: white; margin: 0;">Confirmados</p>
                         <strong style="color: white; font-size: 2rem;" id="totalConfirmados">0</strong>
                     </div>
-                    <div class="card" style="text-align: center; background: linear-gradient(135deg, #f39c12, #d68910);">
-                        <p style="color: white; margin: 0;">Pendentes</p>
-                        <strong style="color: white; font-size: 2rem;" id="totalPendentes">0</strong>
-                    </div>
-                    <div class="card" style="text-align: center; background: linear-gradient(135deg, #e74c3c, #c0392b);">
-                        <p style="color: white; margin: 0;">Cancelados</p>
-                        <strong style="color: white; font-size: 2rem;" id="totalCancelados">0</strong>
-                    </div>
                     <div class="card" style="text-align: center; background: linear-gradient(135deg, #9b59b6, #8e44ad);">
                         <p style="color: white; margin: 0;">Pacientes</p>
                         <strong style="color: white; font-size: 2rem;" id="totalPacientes">0</strong>
@@ -102,15 +94,6 @@
                 <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
                     <h3>Filtrar Agendamentos</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="filtroStatus">Status:</label>
-                            <select id="filtroStatus">
-                                <option value="">Todos</option>
-                                <option value="confirmado">Confirmado</option>
-                                <option value="pendente">Pendente</option>
-                                <option value="cancelado">Cancelado</option>
-                            </select>
-                        </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label for="filtroData">Data:</label>
                             <input type="date" id="filtroData">
@@ -138,8 +121,6 @@
                                 <th>Data</th>
                                 <th>Hora</th>
                                 <th>Motivo</th>
-                                <th>Status</th>
-                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaCorpo">
@@ -246,8 +227,6 @@
 
                 document.getElementById('totalAgendamentos').textContent = stats.total;
                 document.getElementById('totalConfirmados').textContent = stats.confirmado;
-                document.getElementById('totalPendentes').textContent = stats.pendente;
-                document.getElementById('totalCancelados').textContent = stats.cancelado;
                 document.getElementById('totalPacientes').textContent = stats.pacientes;
 
                 exibirTabelaAgendamentos(agendamentos);
@@ -289,37 +268,17 @@
                     <td>${converterDataParaBrasileiro(a.data)}</td>
                     <td>${a.hora}</td>
                     <td>${(a.motivo || '').substring(0, 30)}...</td>
-                    <td><span class="status-badge status-${a.status}">${formatarStatus(a.status)}</span></td>
-                    <td>
-                        ${a.status === 'pendente' ? `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background-color: #27ae60; color: white; border-radius: 4px; cursor: pointer; border: none;" onclick="confirmarAgendamentoUI('${a.id}')">Confirmar</button>` : ''}
-                        ${a.status !== 'cancelado' ? `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background-color: #e74c3c; color: white; border-radius: 4px; cursor: pointer; border: none; margin-left: 0.5rem;" onclick="cancelarAgendamentoUI('${a.id}')">Cancelar</button>` : ''}
-                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background-color: #3498db; color: white; border-radius: 4px; cursor: pointer; border: none; margin-left: 0.5rem;" onclick="visualizarDetalhes('${a.id}')">Detalhes</button>
-                    </td>
                 </tr>
             `).join('');
-        }
-
-        function formatarStatus(status) {
-            const mapa = {
-                'confirmado': 'Confirmado',
-                'pendente': 'Pendente',
-                'cancelado': 'Cancelado'
-            };
-            return mapa[status] || status;
         }
 
         // APLICAR FILTROS COM SUPABASE
         async function aplicarFiltros() {
             try {
-                const status = document.getElementById('filtroStatus').value;
                 const data = document.getElementById('filtroData').value;
                 const paciente = document.getElementById('filtroPaciente').value.toLowerCase();
 
                 let agendamentos = await obterTodosAgendamentos();
-
-                if (status) {
-                    agendamentos = agendamentos.filter(a => a.status === status);
-                }
 
                 if (data) {
                     agendamentos = agendamentos.filter(a => a.data === data);
@@ -339,64 +298,10 @@
         }
 
         function limparFiltros() {
-            document.getElementById('filtroStatus').value = '';
             document.getElementById('filtroData').value = '';
             document.getElementById('filtroPaciente').value = '';
             carregarDados();
         }
-
-        window.confirmarAgendamentoUI = async function(id) {
-            if (confirm('Confirmar este agendamento?')) {
-                try {
-                    await atualizarStatusAgendamento(id, 'confirmado');
-                    carregarDados();
-                    alert('Agendamento confirmado com sucesso!');
-                } catch (erro) {
-                    alert('Erro: ' + erro.message);
-                }
-            }
-        };
-
-        window.cancelarAgendamentoUI = async function(id) {
-            if (confirm('Cancelar este agendamento?')) {
-                try {
-                    await atualizarStatusAgendamento(id, 'cancelado');
-                    carregarDados();
-                    alert('Agendamento cancelado com sucesso!');
-                } catch (erro) {
-                    alert('Erro: ' + erro.message);
-                }
-            }
-        };
-
-        window.visualizarDetalhes = async function(id) {
-            try {
-                // Converter ID para número (vem como string do onclick do HTML)
-                const idNum = parseInt(id, 10);
-                
-                const agendamentos = await obterTodosAgendamentos();
-                const agendamento = agendamentos.find(a => a.id === idNum);
-                
-                if (agendamento) {
-                    alert(`
-Detalhes do Agendamento:
-ID: ${agendamento.id}
-Paciente: ${agendamento.nome}
-Email: ${agendamento.email}
-Telefone: ${agendamento.telefone}
-Data: ${converterDataParaBrasileiro(agendamento.data)}
-Hora: ${agendamento.hora}
-Motivo: ${agendamento.motivo}
-Status: ${formatarStatus(agendamento.status)}
-Criado em: ${new Date(agendamento.created_at).toLocaleString('pt-BR')}
-                    `);
-                } else {
-                    alert('Agendamento não encontrado');
-                }
-            } catch (erro) {
-                alert('Erro ao carregar detalhes: ' + erro.message);
-            }
-        };
 
         async function limparTodosAgendamentos() {
             if (confirm('ATENÇÃO! Isso irá deletar TODOS os agendamentos registrados NO BANCO DE DADOS.\n\nDeseja continuar?')) {

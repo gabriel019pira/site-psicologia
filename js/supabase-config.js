@@ -116,7 +116,7 @@ async function registrarAgendamentoSupabase(dados) {
                 data: dados.data,
                 hora: dados.hora,
                 motivo: dados.motivo,
-                status: 'pendente'
+                status: 'confirmado'
             }])
             .select();
 
