@@ -54,11 +54,32 @@ function initSupabaseClient() {
 
 // Aguardar carregamento da biblioteca Supabase
 async function ensureSupabaseLoaded() {
-    // Aguardar a promise global de carregamento
-    await window.supabaseLoadingPromise;
+    // If Supabase já está disponível, retornar
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        console.log('✓ Supabase já estava carregado');
+        return;
+    }
     
+    // Aguardar a promise de carregamento
+    console.log('Aguardando carregamento da promise Supabase...');
+    try {
+        const result = await Promise.race([
+            window.supabaseLoadingPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout ao carregar Supabase')), 10000))
+        ]);
+        
+        if (!result) {
+            throw new Error('Supabase não carregou corretamente');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao aguardar Supabase:', error);
+        throw error;
+    }
+    
+    // Verificar novamente
     if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-        throw new Error(`❌ Supabase não carregou corretamente\n\nwindow.supabase existe?: ${typeof window.supabase !== 'undefined'}\nwindow.supabase.createClient é função?: ${typeof window.supabase?.createClient === 'function'}\n\nVerifique:\n- Conexão de internet\n- Extensões que bloqueiam scripts\n- Console (F12) para mais detalhes`);
+        const errorMsg = `❌ Supabase não carregou corretamente\n\nwindow.supabase existe?: ${typeof window.supabase !== 'undefined'}\nwindow.supabase.createClient é função?: ${typeof window.supabase?.createClient === 'function'}\n\nVerifique:\n- Conexão de internet\n- Extensões que bloqueiam scripts\n- Console (F12) para mais detalhes`;
+        throw new Error(errorMsg);
     }
 }
 

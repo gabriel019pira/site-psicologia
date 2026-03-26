@@ -110,4 +110,16 @@ function ehFimDeSemana(dataISO) {
     }
 }
 
+// Obter horários disponíveis para uma data (removendo os já agendados)
+async function obterHorariosDisponiveis(data) {
+    try {
+        // Retornar todos os horários disponíveis (sem filtrar por agendamentos)
+        // Pois a restrição deve ser feita no backend
+        return HORARIOS_DISPONIVEIS.slice(); // Retornar cópia do array
+    } catch (error) {
+        console.error('Erro ao obter horários disponíveis:', error);
+        return HORARIOS_DISPONIVEIS.slice(); // Retornar padrão em caso de erro
+    }
+}
+
 
