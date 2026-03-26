@@ -1,3 +1,51 @@
+// ============================================
+// CARREGAMENTO DE SUPABASE COM FALLBACK CDN
+// ============================================
+(async function initSupabaseESM() {
+    const cdnOptions = [
+        'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+        'https://cdn.skypack.dev/@supabase/supabase-js',
+        'https://esm.sh/@supabase/supabase-js@2'
+    ];
+    
+    for (const cdn of cdnOptions) {
+        try {
+            console.log(`🔄 Tentando carregar Supabase de: ${cdn}`);
+            const module = await import(cdn);
+            
+            // Tentar múltiplas formas de acessar createClient
+            let createClientFunc = null;
+            if (typeof module.createClient === 'function') {
+                createClientFunc = module.createClient;
+            } else if (typeof module.default?.createClient === 'function') {
+                createClientFunc = module.default.createClient;
+            } else if (typeof module.default === 'function') {
+                createClientFunc = module.default;
+            }
+            
+            if (typeof createClientFunc !== 'function') {
+                throw new Error(`createClient não encontrado. Exports: ${Object.keys(module).join(', ')}`);
+            }
+            
+            window.supabase = {
+                createClient: createClientFunc,
+                ...module
+            };
+            
+            window.supabaseLoaded = true;
+            console.log('✓ Supabase carregou com sucesso de:', cdn);
+            return true;
+        } catch (error) {
+            console.warn(`⚠️ Falha ao carregar de ${cdn}:`, error.message);
+        }
+    }
+    
+    console.error('❌ Falha ao carregar Supabase de todos os CDNs');
+    window.supabaseLoaded = false;
+    return false;
+})();
+
+// =====================================================
 // Configuração do Supabase
 const SUPABASE_URL = 'https://dpobhypdzgorabjlkppv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_7-rieCzisyK5_WDG5oJ91g_cG4xHvJs';
