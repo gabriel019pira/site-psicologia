@@ -53,7 +53,7 @@ function ensureSupabaseLoaded() {
         }
         
         let attempts = 0;
-        const maxAttempts = 100; // 10 segundos
+        const maxAttempts = 150; // 15 segundos (150 * 100ms)
         
         const interval = setInterval(() => {
             attempts++;
@@ -62,16 +62,21 @@ function ensureSupabaseLoaded() {
             if (window.supabaseLoaded || typeof window.supabase !== 'undefined') {
                 clearInterval(interval);
                 window.supabaseLoaded = true;
-                console.log('✓ Supabase finalmente carregou após', attempts, 'tentativas');
+                console.log('✓ Supabase carregou após', attempts * 100, 'ms');
                 resolve();
                 return;
             }
             
-            // Timeout: se passou de 10 segundos, falhar
+            // Mostrar progresso em logs a cada 2 segundos
+            if (attempts % 20 === 0) {
+                console.log(`⏳ Aguardando Supabase... (${attempts * 100}ms)`);
+            }
+            
+            // Timeout: se passou de 15 segundos, falhar
             if (attempts >= maxAttempts) {
                 clearInterval(interval);
-                const erro = 'Supabase não carregou após 10 segundos. Verifique sua conexão de internet.';
-                console.error('❌', erro);
+                const erro = `❌ Supabase não carregou após ${maxAttempts * 100}ms.\n\nPossíveis causas:\n- Sem conexão de internet\n- Extensão do navegador está bloqueando requisições\n- Problema com CDN\n\nSolução: Recarregue a página (F5) ou desabilite extensões de segurança.`;
+                console.error(erro);
                 reject(new Error(erro));
             }
         }, 100);

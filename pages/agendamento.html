@@ -5,37 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Consulta - Psicóloga</title>
     <link rel="stylesheet" href="../css/style.css">
-    <!-- Carregador Supabase com ESM dinâmico robusto -->
+    <!-- Carregador Supabase com múltiplos CDNs (fallback) -->
     <script type="module">
         async function loadSupabaseESM() {
-            try {
-                console.log('🔄 Loading Supabase from skypack...');
-                const module = await import('https://cdn.skypack.dev/@supabase/supabase-js');
-                
-                // Skypack pode retornar um módulo com exports nomeados
-                // Precisamos expor o createClient globalmente
-                window.supabase = {
-                    createClient: module.createClient || module.default?.createClient,
-                    ...module // Aussi expor todas as outras exports
-                };
-                
-                // Verificar se createClient está disponível
-                if (typeof window.supabase.createClient !== 'function') {
-                    throw new Error('createClient não é uma função - module: ' + JSON.stringify(Object.keys(module)));
+            const cdnOptions = [
+                'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+                'https://cdn.skypack.dev/@supabase/supabase-js',
+                'https://esm.sh/@supabase/supabase-js@2'
+            ];
+            
+            for (const cdn of cdnOptions) {
+                try {
+                    console.log(`🔄 Tentando carregar Supabase de: ${cdn}`);
+                    const module = await import(cdn);
+                    
+                    window.supabase = {
+                        createClient: module.createClient || module.default?.createClient,
+                        ...module
+                    };
+                    
+                    if (typeof window.supabase.createClient !== 'function') {
+                        throw new Error('createClient não é função');
+                    }
+                    
+                    window.supabaseLoaded = true;
+                    console.log('✓ Supabase carregou com sucesso de:', cdn);
+                    return true;
+                } catch (error) {
+                    console.warn(`⚠️ Falha ao carregar de ${cdn}:`, error.message);
                 }
-                
-                window.supabaseLoaded = true;
-                console.log('✓ Supabase carregou com sucesso!');
-                console.log('✓ createClient disponível:', typeof window.supabase.createClient);
-                return true;
-            } catch (error) {
-                console.error('❌ Erro ao carregar Supabase:', error.message);
-                window.supabaseLoaded = false;
-                return false;
             }
+            
+            console.error('❌ Falha ao carregar Supabase de todos os CDNs');
+            window.supabaseLoaded = false;
+            return false;
         }
         
-        // Carregar imediatamente
         loadSupabaseESM();
     </script>
 </head>
@@ -198,6 +203,12 @@
             // Enviar formulário (AGORA COM SUPABASE)
             formAgendamento.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
+                // Verificar se Supabase carregou
+                if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+                    alertaDiv.innerHTML = '<div class="alert alert-error">❌ ERRO: Conexão com servidor não foi carregada. Recarregue a página (F5).</div>';
+                    return;
+                }
 
                 const dados = {
                     nome: document.getElementById('nome').value,
