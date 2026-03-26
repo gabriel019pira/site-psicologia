@@ -19,14 +19,24 @@
                     console.log(`🔄 Tentando carregar Supabase de: ${cdn}`);
                     const module = await import(cdn);
                     
+                    // Tentar múltiplas formas de acessar createClient
+                    let createClientFunc = null;
+                    if (typeof module.createClient === 'function') {
+                        createClientFunc = module.createClient;
+                    } else if (typeof module.default?.createClient === 'function') {
+                        createClientFunc = module.default.createClient;
+                    } else if (typeof module.default === 'function') {
+                        createClientFunc = module.default;
+                    }
+                    
+                    if (typeof createClientFunc !== 'function') {
+                        throw new Error(`createClient não encontrado. Exports: ${Object.keys(module).join(', ')}`);
+                    }
+                    
                     window.supabase = {
-                        createClient: module.createClient || module.default?.createClient,
+                        createClient: createClientFunc,
                         ...module
                     };
-                    
-                    if (typeof window.supabase.createClient !== 'function') {
-                        throw new Error('createClient não é função');
-                    }
                     
                     window.supabaseLoaded = true;
                     console.log('✓ Supabase carregou com sucesso de:', cdn);
