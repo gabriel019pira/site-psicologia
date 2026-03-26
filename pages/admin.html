@@ -208,7 +208,10 @@
         // FUNÇÃO ASYNC PARA CARREGAR DADOS DO SUPABASE
         async function carregarDados() {
             try {
+                console.log('📊 Iniciando carregamento de dados...');
                 const agendamentos = await obterTodosAgendamentos();
+                console.log('✓ Agendamentos carregados:', agendamentos.length);
+                
                 const stats = obterEstatisticas(agendamentos);
 
                 document.getElementById('totalAgendamentos').textContent = stats.total;
@@ -216,8 +219,13 @@
                 document.getElementById('totalPacientes').textContent = stats.pacientes;
 
                 exibirTabelaAgendamentos(agendamentos);
+                console.log('✓ Tabela exibida com sucesso');
             } catch (erro) {
+                console.error('❌ Erro ao carregar agendamentos:', erro);
                 alert('Erro ao carregar agendamentos: ' + erro.message);
+                document.getElementById('tabelaCorpo').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #d32f2f;">❌ Erro: ' + erro.message + '</td></tr>';
+            }
+        }
             }
         }
 
