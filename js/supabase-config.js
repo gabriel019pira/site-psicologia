@@ -1,49 +1,64 @@
 // ============================================
 // CARREGAMENTO DE SUPABASE COM FALLBACK CDN
 // ============================================
-(async function initSupabaseESM() {
+window.supabaseLoaded = false;
+window.supabaseLoadedPromise = new Promise((resolve) => {
     const cdnOptions = [
-        'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-        'https://cdn.skypack.dev/@supabase/supabase-js',
-        'https://esm.sh/@supabase/supabase-js@2'
+        'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm',
+        'https://esm.sh/@supabase/supabase-js@2',
+        'https://cdn.skypack.dev/@supabase/supabase-js'
     ];
     
-    for (const cdn of cdnOptions) {
-        try {
-            console.log(`🔄 Tentando carregar Supabase de: ${cdn}`);
-            const module = await import(cdn);
-            
-            // Tentar múltiplas formas de acessar createClient
-            let createClientFunc = null;
-            if (typeof module.createClient === 'function') {
-                createClientFunc = module.createClient;
-            } else if (typeof module.default?.createClient === 'function') {
-                createClientFunc = module.default.createClient;
-            } else if (typeof module.default === 'function') {
-                createClientFunc = module.default;
-            }
-            
-            if (typeof createClientFunc !== 'function') {
-                throw new Error(`createClient não encontrado. Exports: ${Object.keys(module).join(', ')}`);
-            }
-            
-            window.supabase = {
-                createClient: createClientFunc,
-                ...module
-            };
-            
-            window.supabaseLoaded = true;
-            console.log('✓ Supabase carregou com sucesso de:', cdn);
-            return true;
-        } catch (error) {
-            console.warn(`⚠️ Falha ao carregar de ${cdn}:`, error.message);
+    let cdnIndex = 0;
+    
+    function tryLoadCDN() {
+        if (cdnIndex >= cdnOptions.length) {
+            console.error('❌ Falha ao carregar Supabase de todos os CDNs');
+            window.supabaseLoaded = false;
+            resolve(false);
+            return;
         }
+        
+        const cdn = cdnOptions[cdnIndex];
+        console.log(`🔄 Tentando carregar Supabase de: ${cdn}`);
+        
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.textContent = `
+            import * as SupabaseModule from '${cdn}';
+            window.supabase = SupabaseModule;
+            window.supabaseLoaded = true;
+            console.log('✓ Supabase carregou com sucesso de: ${cdn}');
+            window.dispatchEvent(new CustomEvent('supabaseLoaded'));
+        `;
+        
+        script.onerror = () => {
+            console.warn(`⚠️ Falha ao carregar de ${cdn}`);
+            cdnIndex++;
+            tryLoadCDN();
+        };
+        
+        // Detectar erro de importação também
+        const timeoutId = setTimeout(() => {
+            if (!window.supabaseLoaded) {
+                console.warn(`⚠️ Timeout ao carregar de ${cdn}`);
+                cdnIndex++;
+                tryLoadCDN();
+            }
+        }, 3000);
+        
+        window.addEventListener('supabaseLoaded', () => clearTimeout(timeoutId), { once: true });
+        
+        document.head.appendChild(script);
     }
     
-    console.error('❌ Falha ao carregar Supabase de todos os CDNs');
-    window.supabaseLoaded = false;
-    return false;
-})();
+    // Aguardar DOM estar pronto antes de adicionar script
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', tryLoadCDN);
+    } else {
+        tryLoadCDN();
+    }
+});
 
 // =====================================================
 // Configuração do Supabase
@@ -69,13 +84,26 @@ function initSupabaseClient() {
     
     // Aguardar que a biblioteca Supabase esteja disponível
     if (typeof window.supabase === 'undefined') {
-        console.error('❌ Biblioteca Supabase não está disponível!');
+        console.error('❌ Biblioteca Supabase não está disponível no window.supabase!');
+        console.log('window.supabase =', window.supabase);
+        console.log('window.supabaseLoaded =', window.supabaseLoaded);
         return null;
     }
     
     try {
-        const { createClient } = window.supabase;
-        supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Verificar qual é o createClient correto
+        let createClientFunc = null;
+        if (typeof window.supabase.createClient === 'function') {
+            createClientFunc = window.supabase.createClient;
+        } else if (typeof window.supabase.default?.createClient === 'function') {
+            createClientFunc = window.supabase.default.createClient;
+        } else if (typeof window.supabase.default === 'function') {
+            createClientFunc = window.supabase.default;
+        } else {
+            throw new Error(`createClient não encontrado. Supabase exports: ${Object.keys(window.supabase).join(', ')}`);
+        }
+        
+        supabaseClient = createClientFunc(SUPABASE_URL, SUPABASE_KEY);
         console.log('✓ Cliente Supabase inicializado com sucesso');
         return supabaseClient;
     } catch (error) {
@@ -84,51 +112,14 @@ function initSupabaseClient() {
     }
 }
 
-// Aguardar carregamento da biblioteca Supabase (com retry mais agressivo)
-function ensureSupabaseLoaded() {
-    return new Promise((resolve, reject) => {
-        // Se já está marcado como carregado, resolver imediatamente
-        if (window.supabaseLoaded && typeof window.supabase !== 'undefined') {
-            resolve();
-            return;
-        }
-        
-        // Se Supabase já está disponível mas flag ainda não foi setada
-        if (typeof window.supabase !== 'undefined') {
-            window.supabaseLoaded = true;
-            resolve();
-            return;
-        }
-        
-        let attempts = 0;
-        const maxAttempts = 150; // 15 segundos (150 * 100ms)
-        
-        const interval = setInterval(() => {
-            attempts++;
-            
-            // Verificar se Supabase carregou
-            if (window.supabaseLoaded || typeof window.supabase !== 'undefined') {
-                clearInterval(interval);
-                window.supabaseLoaded = true;
-                console.log('✓ Supabase carregou após', attempts * 100, 'ms');
-                resolve();
-                return;
-            }
-            
-            // Mostrar progresso em logs a cada 2 segundos
-            if (attempts % 20 === 0) {
-                console.log(`⏳ Aguardando Supabase... (${attempts * 100}ms)`);
-            }
-            
-            // Timeout: se passou de 15 segundos, falhar
-            if (attempts >= maxAttempts) {
-                clearInterval(interval);
-                const erro = `❌ Supabase não carregou após ${maxAttempts * 100}ms.\n\nPossíveis causas:\n- Sem conexão de internet\n- Extensão do navegador está bloqueando requisições\n- Problema com CDN\n\nSolução: Recarregue a página (F5) ou desabilite extensões de segurança.`;
-                console.error(erro);
-                reject(new Error(erro));
-            }
-        }, 100);
-    });
+// Aguardar carregamento da biblioteca Supabase
+async function ensureSupabaseLoaded() {
+    // Aguardar a promise global de carregamento
+    await window.supabaseLoadedPromise;
+    
+    if (!window.supabaseLoaded || typeof window.supabase === 'undefined') {
+        throw new Error('❌ Supabase falhou em carregar de todos os CDNs\n\nVerifique:\n- Conexão de internet\n- Extensões que bloqueiam requisições\n- Console (F12) para mais detalhes');
+    }
 }
 
 // Função para registrar agendamento no Supabase
