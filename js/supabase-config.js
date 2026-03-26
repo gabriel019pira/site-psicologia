@@ -2,61 +2,97 @@
 // CARREGAMENTO DE SUPABASE COM FALLBACK CDN
 // ============================================
 window.supabaseLoaded = false;
-window.supabaseLoadedPromise = new Promise((resolve) => {
+window.supabaseLoadingPromise = new Promise((resolve) => {
+    // Se Supabase já carregou, resolver imediatamente
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        window.supabaseLoaded = true;
+        console.log('✓ Supabase já estava carregado');
+        resolve(true);
+        return;
+    }
+    
+    // URLs de CDN que servem módulos ESM
     const cdnOptions = [
-        'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm',
-        'https://esm.sh/@supabase/supabase-js@2',
-        'https://cdn.skypack.dev/@supabase/supabase-js'
+        { name: 'esm.sh', url: 'https://esm.sh/@supabase/supabase-js@2' },
+        { name: 'cdn.jsdelivr.net', url: 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm' },
+        { name: 'skypack', url: 'https://cdn.skypack.dev/@supabase/supabase-js@2' }
     ];
     
-    let cdnIndex = 0;
+    let currentIndex = 0;
     
-    function tryLoadCDN() {
-        if (cdnIndex >= cdnOptions.length) {
+    function loadNextCDN() {
+        if (currentIndex >= cdnOptions.length) {
             console.error('❌ Falha ao carregar Supabase de todos os CDNs');
             window.supabaseLoaded = false;
             resolve(false);
             return;
         }
         
-        const cdn = cdnOptions[cdnIndex];
-        console.log(`🔄 Tentando carregar Supabase de: ${cdn}`);
+        const cdn = cdnOptions[currentIndex];
+        console.log(`🔄 Tentando carregar Supabase via ${cdn.name}...`);
         
         const script = document.createElement('script');
         script.type = 'module';
+        
+        // Script sem top-level await
         script.textContent = `
-            import * as SupabaseModule from '${cdn}';
-            window.supabase = SupabaseModule;
-            window.supabaseLoaded = true;
-            console.log('✓ Supabase carregou com sucesso de: ${cdn}');
-            window.dispatchEvent(new CustomEvent('supabaseLoaded'));
+            import('${cdn.url}').then(mod => {
+                window.supabase = mod;
+                window.supabaseLoaded = true;
+                console.log('✓ Supabase carregou com sucesso via ${cdn.name}');
+                window.dispatchEvent(new CustomEvent('supabaseReady'));
+            }).catch(err => {
+                console.warn('⚠️ Erro ao carregar via ${cdn.name}:', err.message);
+                window.dispatchEvent(new CustomEvent('supabaseFailed'));
+            });
         `;
         
-        script.onerror = () => {
-            console.warn(`⚠️ Falha ao carregar de ${cdn}`);
-            cdnIndex++;
-            tryLoadCDN();
+        let resolved = false;
+        
+        const onSuccess = () => {
+            if (!resolved && window.supabaseLoaded) {
+                resolved = true;
+                cleanup();
+                resolve(true);
+            }
         };
         
-        // Detectar erro de importação também
-        const timeoutId = setTimeout(() => {
-            if (!window.supabaseLoaded) {
-                console.warn(`⚠️ Timeout ao carregar de ${cdn}`);
-                cdnIndex++;
-                tryLoadCDN();
+        const onFail = () => {
+            if (!resolved) {
+                resolved = true;
+                cleanup();
+                currentIndex++;
+                loadNextCDN();
             }
-        }, 3000);
+        };
         
-        window.addEventListener('supabaseLoaded', () => clearTimeout(timeoutId), { once: true });
+        const cleanup = () => {
+            window.removeEventListener('supabaseReady', onSuccess);
+            window.removeEventListener('supabaseFailed', onFail);
+            clearTimeout(timeoutId);
+        };
+        
+        const timeoutId = setTimeout(() => {
+            if (!resolved) {
+                console.warn(`⚠️ Timeout ao carregar de ${cdn.name}`);
+                resolved = true;
+                cleanup();
+                currentIndex++;
+                loadNextCDN();
+            }
+        }, 5000);
+        
+        window.addEventListener('supabaseReady', onSuccess, { once: true });
+        window.addEventListener('supabaseFailed', onFail, { once: true });
         
         document.head.appendChild(script);
     }
     
-    // Aguardar DOM estar pronto antes de adicionar script
+    // Aguardar DOM antes de carregar
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', tryLoadCDN);
+        document.addEventListener('DOMContentLoaded', loadNextCDN, { once: true });
     } else {
-        tryLoadCDN();
+        loadNextCDN();
     }
 });
 
@@ -115,10 +151,10 @@ function initSupabaseClient() {
 // Aguardar carregamento da biblioteca Supabase
 async function ensureSupabaseLoaded() {
     // Aguardar a promise global de carregamento
-    await window.supabaseLoadedPromise;
+    await window.supabaseLoadingPromise;
     
-    if (!window.supabaseLoaded || typeof window.supabase === 'undefined') {
-        throw new Error('❌ Supabase falhou em carregar de todos os CDNs\n\nVerifique:\n- Conexão de internet\n- Extensões que bloqueiam requisições\n- Console (F12) para mais detalhes');
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        throw new Error(`❌ Supabase não carregou corretamente\n\nwindow.supabase existe?: ${typeof window.supabase !== 'undefined'}\nwindow.supabase.createClient é função?: ${typeof window.supabase?.createClient === 'function'}\n\nVerifique:\n- Conexão de internet\n- Extensões que bloqueiam scripts\n- Console (F12) para mais detalhes`);
     }
 }
 
