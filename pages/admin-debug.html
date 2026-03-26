@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .log {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug - Admin Page</h1>
+        <p>Esta página verifica o que está acontecendo com o carregamento</p>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        
+        function log(msg, type = 'info') {
+            const prefix = type === 'error' ? '❌ ERROR: ' : 
+                          type === 'success' ? '✓ SUCCESS: ' : 
+                          type === 'warning' ? '⚠️ WARNING: ' : '📝 INFO: ';
+            
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = prefix + msg;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        log('Página iniciada');
+        log('Verificando arquivos...');
+        
+        // Teste 1: Tentar carregar supabase-config.js
+        setTimeout(() => {
+            if (typeof window.supabaseLoaded !== 'undefined') {
+                log('window.supabaseLoaded definido: ' + window.supabaseLoaded, 'success');
+            } else {
+                log('window.supabaseLoaded NÃO está definido', 'warning');
+            }
+            
+            if (window.supabase) {
+                log('window.supabase está disponível', 'success');
+                if (typeof window.supabase.createClient === 'function') {
+                    log('window.supabase.createClient é função', 'success');
+                } else {
+                    log('window.supabase.createClient NÃO é função', 'error');
+                }
+            } else {
+                log('window.supabase NÃO está disponível', 'error');
+            }
+        }, 1000);
+        
+        // Teste 2: Verificar CSS
+        setTimeout(() => {
+            const cssLoaded = document.styleSheets.length > 0;
+            if (cssLoaded) {
+                log('CSS carregado: ' + document.styleSheets.length + ' folhas', 'success');
+            } else {
+                log('Nenhuma CSS carregada', 'warning');
+            }
+        }, 500);
+        
+        // Teste 3: Console log para verificar e
+        console.log('=== DEBUG INFO ===');
+        console.log('window.supabaseLoaded:', window.supabaseLoaded);
+        console.log('window.supabase:', window.supabase);
+    </script>
+    
+    <script src="../js/supabase-config.js" defer></script>
+</body>
+</html>

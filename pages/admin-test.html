@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Test via HTTP</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { font-family: Arial; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .test-result.pass { background: #d4edda; color: #155724; }
+        .test-result.fail { background: #f8d7da; color: #721c24; }
+        .log { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; max-height: 300px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Teste Admin - Verificação de Carregamento</h1>
+    <div id="results"></div>
+    <div id="log" class="log"></div>
+
+    <script src="js/supabase-config.js" defer></script>
+    <script>
+        const resultsEl = document.getElementById('results');
+        const logEl = document.getElementById('log');
+        
+        function addResult(name, pass, details = '') {
+            const div = document.createElement('div');
+            div.className = 'test-result ' + (pass ? 'pass' : 'fail');
+            div.textContent = (pass ? '✓' : '✗') + ' ' + name + (details ? ' - ' + details : '');
+            resultsEl.appendChild(div);
+        }
+
+        function log(msg) {
+            logEl.textContent += (logEl.textContent ? '\n' : '') + msg;
+            console.log(msg);
+        }
+
+        // Teste inicial
+        log('Página iniciada em: ' + new Date().toLocaleTimeString('pt-BR'));
+        log('Aguardando carregamento de Supabase...');
+
+        // Teste imediato
+        addResult('Página HTML carregou', document.body !== null);
+        addResult('CSS carregou', document.styleSheets.length > 0, document.styleSheets.length + ' folhas');
+
+        // Teste de Supabase
+        setTimeout(() => {
+            log('\n=== TESTES DE SUPABASE ===');
+            
+            const supabaseExists = typeof window.supabase !== 'undefined';
+            addResult('window.supabase existe', supabaseExists);
+            log('window.supabase = ' + typeof window.supabase);
+            
+            if (window.supabase) {
+                const createClientExists = typeof window.supabase.createClient === 'function';
+                addResult('createClient é função', createClientExists);
+                log('window.supabase.createClient = ' + (createClientExists ? 'FUNÇÃO' : 'NÃO É FUNÇÃO'));
+            } else {
+                log('window.supabase não EXISTE');
+            }
+            
+            const supabaseLoaded = window.supabaseLoaded === true;
+            addResult('window.supabaseLoaded', supabaseLoaded);
+            log('window.supabaseLoaded = ' + window.supabaseLoaded);
+            
+            // Teste de Promise
+            log('\nAguardando promise de carregamento...');
+            if (window.supabaseLoadingPromise) {
+                Promise.resolve(window.supabaseLoadingPromise)
+                    .then(() => {
+                        log('✓ Promise resolvida com sucesso');
+                        addResult('Promise resolvida', true);
+                        
+                        // Teste final: tentar criar cliente
+                        try {
+                            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                                const testClient = window.supabase.createClient(
+                                    'https://test.supabase.co',
+                                    'pk_test_123'
+                                );
+                                addResult('Cliente Supabase criável', true);
+                                log('✓ Cliente Supabase criado com sucesso');
+                            }
+                        } catch (e) {
+                            addResult('Cliente Supabase criável', false, e.message);
+                            log('✗ Erro ao criar cliente: ' + e.message);
+                        }
+                    })
+                    .catch(err => {
+                        log('✗ Erro na promise: ' + err.message);
+                        addResult('Promise resolvida', false, err.message);
+                    });
+            } else {
+                log('✗ window.supabaseLoadingPromise não existe');
+                addResult('Promise existe', false);
+            }
+        }, 2000);
+
+        // Teste timeout
+        setTimeout(() => {
+            if (!window.supabase) {
+                log('\n⚠️ TIMEOUT: Supabase não carregou em 5 segundos');
+                log('Verifique:');
+                log('1. Console do navegador (F12) para erros');
+                log('2. Aba Network (F12) para ver se CDN foi puxado');
+                log('3. Sua conexão com internet');
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Teste Simplificado</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        h1 { color: #333; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 4px; border-left: 4px solid; }
+        .status.loading { background: #e3f2fd; border-color: #2196f3; }
+        .status.success { background: #c8e6c9; border-color: #4caf50; }
+        .status.error { background: #ffcdd2; border-color: #f44336; }
+        .status.waiting { background: #fff9c4; border-color: #fbc02d; }
+        .info-box { background: #f0f0f0; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        button { background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 10px 0; }
+        button:hover { background: #1976d2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Teste de Carregamento - Admin</h1>
+        <div id="statusArea"></div>
+        <button onclick="location.reload()">🔄 Recarregar Página</button>
+        <div id="debugInfo" class="info-box"></div>
+    </div>
+
+    <script>
+        const statusArea = document.getElementById('statusArea');
+        const debugInfo = document.getElementById('debugInfo');
+        let debugLines = [];
+
+        function addStatus(title, type, message = '') {
+            const div = document.createElement('div');
+            div.className = 'status ' + type;
+            div.textContent = '• ' + title + (message ? ': ' + message : '');
+            statusArea.appendChild(div);
+        }
+
+        function addDebug(line) {
+            debugLines.push(new Date().toLocaleTimeString() + ': ' + line);
+            debugInfo.textContent = debugLines.join('\n');
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+        }
+
+        addDebug('Página test-admin-simplificado.html carregada');
+        addStatus('Iniciando teste', 'loading');
+        addDebug('Verificando se supabase-loader.js foi carregado');
+
+        // Teste 1: Verificar se loader foi carregado
+        setTimeout(() => {
+            const loaderCarregado = typeof window.supabaseLoadingPromise !== 'undefined';
+            addDebug('supabaseLoadingPromise: ' + (loaderCarregado ? 'EXISTE' : 'NÃO EXISTE'));
+            addStatus('Supabase Loader carregado', loaderCarregado ? 'success' : 'error');
+
+            if (!loaderCarregado) {
+                addStatus('ERRO CRÍTICO', 'error', 'supabase-loader.js não foi carregado!');
+                return;
+            }
+
+            // Teste 2: Aguardar promise resolver
+            addDebug('Aguardando promise resolver...');
+            addStatus('Aguardando carregamento do Supabase', 'waiting');
+
+            Promise.resolve(window.supabaseLoadingPromise)
+                .then(result => {
+                    addDebug('Promise resolvida com: ' + result);
+                    addStatus('Promise resolvida', 'success', result.toString());
+
+                    // Teste 3: Verificar window.supabase
+                    const supabaseExists = typeof window.supabase !== 'undefined';
+                    addDebug('window.supabase: ' + (supabaseExists ? 'EXISTE' : 'NÃO EXISTE'));
+                    addStatus('window.supabase', supabaseExists ? 'success' : 'error');
+
+                    if (!supabaseExists) {
+                        addStatus('ERRO', 'error', 'window.supabase não foi criado');
+                        return;
+                    }
+
+                    // Teste 4: Verificar createClient
+                    const createClientExists = typeof window.supabase.createClient === 'function';
+                    addDebug('window.supabase.createClient: ' + (createClientExists ? 'FUNÇÃO' : 'NÃO É FUNÇÃO'));
+                    addDebug('Exports de window.supabase: ' + Object.keys(window.supabase).join(', '));
+                    addStatus('createClient é função', createClientExists ? 'success' : 'error');
+
+                    if (!createClientExists) {
+                        addStatus('ERRO', 'error', 'createClient não é uma função!');
+                        return;
+                    }
+
+                    // Teste 5: Tentar criar cliente
+                    try {
+                        const testClient = window.supabase.createClient(
+                            'https://dpobhypdzgorabjlkppv.supabase.co',
+                            'sb_publishable_7-rieCzisyK5_WDG5oJ91g_cG4xHvJs'
+                        );
+                        addDebug('Cliente Supabase criado com sucesso');
+                        addStatus('Cliente Supabase criável', 'success');
+                        addStatus('✅ TUDO FUNCIONANDO!', 'success', 'A página admin deveria carregar agora');
+                    } catch (err) {
+                        addDebug('ERRO ao criar cliente: ' + err.message);
+                        addStatus('Erro ao criar cliente', 'error', err.message);
+                    }
+                })
+                .catch(err => {
+                    addDebug('ERRO na promise: ' + err.message);
+                    addDebug('Stack: ' + err.stack);
+                    addStatus('Erro na promise', 'error', err.message);
+                });
+        }, 500);
+
+        // Timeout
+        setTimeout(() => {
+            if (!window.supabase) {
+                addStatus('TIMEOUT', 'error', 'Supabase não carregou em 10 segundos');
+                addDebug('TIMEOUT - Supabase não carregou');
+            }
+        }, 10000);
+    </script>
+
+    <!-- Carregar supabase-loader primeiro -->
+    <script src="../js/supabase-loader.js" defer></script>
+</body>
+</html>

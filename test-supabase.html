@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Carregamento Supabase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #007bff; }
+        h1 { color: #333; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Teste de Carregamento Supabase</h1>
+        
+        <div id="statusContainer">
+            <h2>Status de Carregamento:</h2>
+            <div id="statusLog" class="log"></div>
+        </div>
+
+        <button onclick="testSupabaseConnection()">Testar Conexão</button>
+        <button onclick="clearLog()">Limpar Log</button>
+    </div>
+
+    <script src="./js/supabase-config.js" defer></script>
+    <script>
+        const logElement = document.getElementById('statusLog');
+        let logCount = 0;
+
+        function addLog(message, type = 'info') {
+            logCount++;
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            const prefix = logCount + '. [' + timestamp + ']';
+            const className = 'log-' + type;
+            const line = `<div class="${className}"><span class="${type}">${prefix}</span> ${message}</div>`;
+            logElement.innerHTML += line;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            logElement.innerHTML = '';
+            logCount = 0;
+        }
+
+        async function testSupabaseConnection() {
+            addLog('🔄 Iniciando teste...', 'info');
+
+            // Teste 1: Verificar se window.supabase existe
+            setTimeout(() => {
+                if (window.supabase) {
+                    addLog('✓ window.supabase está disponível', 'success');
+                } else {
+                    addLog('✗ window.supabase NÃO está disponível', 'error');
+                    return;
+                }
+
+                // Teste 2: Verificar se createClient é uma função
+                if (typeof window.supabase.createClient === 'function') {
+                    addLog('✓ window.supabase.createClient é uma função', 'success');
+                } else {
+                    addLog('✗ window.supabase.createClient NÃO é uma função', 'error');
+                    addLog('Tipo: ' + typeof window.supabase.createClient, 'warning');
+                    return;
+                }
+
+                // Teste 3: Tentar criar cliente Supabase
+                try {
+                    const SUPABASE_URL = 'https://dpobhypdzgorabjlkppv.supabase.co';
+                    const SUPABASE_KEY = 'sb_publishable_7-rieCzisyK5_WDG5oJ91g_cG4xHvJs';
+                    
+                    const testClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    addLog('✓ Cliente Supabase criado com sucesso', 'success');
+                    
+                    // Teste 4: Tentar consulta simples
+                    addLog('🔄 Testando consulta ao banco de dados...', 'info');
+                    testClient
+                        .from('agendamentos')
+                        .select('count(*)')
+                        .then(response => {
+                            if (response.error) {
+                                addLog('✗ Erro na consulta: ' + response.error.message, 'error');
+                            } else {
+                                addLog('✓ Conexão com banco de dados: OK', 'success');
+                                addLog('Total de agendamentos: ' + (response.data?.[0]?.count || 0), 'info');
+                            }
+                        })
+                        .catch(err => {
+                            addLog('✗ Erro ao consultar: ' + err.message, 'error');
+                        });
+                } catch (error) {
+                    addLog('✗ Erro ao criar cliente: ' + error.message, 'error');
+                }
+            }, 1000);
+        }
+
+        // Log automático de carregamento
+        console.log('[TEST] Aguardando Supabase carregar...');
+        addLog('Página carregada. Aguardando Supabase...', 'info');
+
+        // Verificar status a cada 1 segundo
+        const checkInterval = setInterval(() => {
+            if (window.supabaseLoaded) {
+                clearInterval(checkInterval);
+                addLog('✓ Supabase foi carregado com sucesso!', 'success');
+                testSupabaseConnection();
+            }
+        }, 1000);
+
+        // Timeout após 15 segundos
+        setTimeout(() => {
+            if (!window.supabaseLoaded) {
+                clearInterval(checkInterval);
+                addLog('⚠️ Timeout: Supabase não carregou em 15 segundos', 'warning');
+                addLog('Possíveis causas:', 'warning');
+                addLog('1. Sem conexão de internet', 'warning');
+                addLog('2. CDN bloqueado por extensão do navegador', 'warning');
+                addLog('3. Firewall bloqueando requisições', 'warning');
+                addLog('Abra F12 (DevTools) > Console para ver mais detalhes', 'warning');
+            }
+        }, 15000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Supabase IIFE Loading</title>
+</head>
+<body>
+    <h1>Testando diferentes formas de carregar Supabase</h1>
+    <div id="log"></div>
+
+    <script>
+        const log = document.getElementById('log');
+        function addLog(msg) {
+            log.innerHTML += msg + '<br>';
+            console.log(msg);
+        }
+
+        // Teste 1: Tentar com jsdelivr diretamente
+        addLog('[TEST 1] Tentando https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+    </script>
+    
+    <!-- Teste 1: Supabase direto do jsdelivr -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        addLog('Após carregar jsdelivr:');
+        addLog('window.supabase = ' + typeof window.supabase);
+        addLog('window.supabaseClient = ' + typeof window.supabaseClient);
+        addLog('typeof window = ' + typeof window);
+        
+        if (!window.supabase) {
+            addLog('[TEST 2] Tentando https://unpkg.com/@supabase/supabase-js');
+        }
+    </script>
+    
+    <!-- Teste 2: Fallback unpkg -->
+    <script>
+        if (!window.supabase) {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@supabase/supabase-js';
+            script.onload = () => {
+                addLog('Após carregar unpkg:');
+                addLog('window.supabase = ' + typeof window.supabase);
+                if (window.supabase && typeof window.supabase.createClient === 'function') {
+                    addLog('✓ Supabase CARREGOU COM SUCESSO!');
+                }
+            };
+            script.onerror = () => {
+                addLog('✗ Erro ao carregar unpkg');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>

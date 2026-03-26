@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste - Supabase Loader</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 4px; border-left: 4px solid; }
+        .pass { background: #d4edda; border-color: #28a745; }
+        .fail { background: #f8d7da; border-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>Teste Supabase Loader</h1>
+    <div id="results"></div>
+
+    <script src="js/supabase-loader.js" defer></script>
+    <script>
+        const r = document.getElementById('results');
+        
+        function test(title, cond, detail = '') {
+            const div = document.createElement('div');
+            div.className = 'result ' + (cond ? 'pass' : 'fail');
+            div.textContent = (cond ? '✓' : '✗') + ' ' + title + (detail ? ' (' + detail + ')' : '');
+            r.appendChild(div);
+        }
+
+        setTimeout(() => {
+            test('supabase-loader.js carregou', typeof window.supabaseLoadingPromise !== 'undefined');
+            
+            Promise.resolve(window.supabaseLoadingPromise).then(() => {
+                test('Promise resolvida', true);
+                test('window.supabase existe', typeof window.supabase !== 'undefined');
+                test('window.supabase.createClient é função', typeof window.supabase.createClient === 'function');
+                test('window.supabaseLoaded === true', window.supabaseLoaded === true);
+            }).catch(err => {
+                test('Promise resolvida', false, err.message);
+            });
+        }, 1000);
+    </script>
+</body>
+</html>
