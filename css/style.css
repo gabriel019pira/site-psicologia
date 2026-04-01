@@ -741,6 +741,27 @@ table tbody tr:hover {
     color: white;
 }
 
+/* Alert de Construção */
+.alert-construction {
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.alert-construction .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-construction p {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #856404;
+    margin: 0;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
     .page-header {
