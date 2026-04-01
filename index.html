@@ -91,10 +91,22 @@
     <footer class="footer">
         <div class="container">
             <p>&copy; 2026 Franciele Silva - Consultório de Psicologia. Todos os direitos reservados.</p>
-            <p>CRP: 12/3456</p>
+            <p>CRP: 12/3456 | <a href="pages/privacidade.html" style="color: inherit; text-decoration: underline;">Política de Privacidade</a></p>
         </div>
     </footer>
     </main>
+
+    <!-- Banner de Cookies LGPD -->
+    <div id="cookieBanner">
+        <div class="cookie-content">
+            <h3>🍪 Cookies e Privacidade</h3>
+            <p>Utilizamos cookies mínimos para melhorar sua experiência. Ao continuar navegando, você concorda com nossa <a href="pages/privacidade.html" target="_blank">Política de Privacidade</a>.</p>
+        </div>
+        <div class="cookie-buttons">
+            <button class="btn-accept-cookies" id="acceptCookies">Aceitar</button>
+            <button class="btn-decline-cookies" id="declineCookies">Rejeitar</button>
+        </div>
+    </div>
 
     <script src="js/agendamento.js"></script>
     <script>
@@ -130,6 +142,47 @@
                 this.classList.add('active');
             });
         });
+
+        // ========== BANNERS DE COOKIES - LGPD ==========
+
+        // Verificar se o usuário já aceitou cookies
+        function verificarCookies() {
+            const cookieBanner = document.getElementById('cookieBanner');
+            const consentimento = localStorage.getItem('consentimento_cookies');
+            
+            if (!consentimento) {
+                cookieBanner.classList.add('show');
+            }
+        }
+
+        // Aceitar cookies
+        document.getElementById('acceptCookies').addEventListener('click', function() {
+            localStorage.setItem('consentimento_cookies', 'aceito');
+            localStorage.setItem('data_consentimento', new Date().toISOString());
+            
+            // Log de conformidade
+            console.log('✓ Usuário aceitou cookies - LGPD');
+            console.log('Data:', new Date().toISOString());
+            
+            // Esconder banner
+            document.getElementById('cookieBanner').classList.remove('show');
+        });
+
+        // Rejeitar cookies
+        document.getElementById('declineCookies').addEventListener('click', function() {
+            localStorage.setItem('consentimento_cookies', 'rejeitado');
+            localStorage.setItem('data_consentimento', new Date().toISOString());
+            
+            // Log de conformidade
+            console.log('✓ Usuário rejeitou cookies - LGPD');
+            console.log('Data:', new Date().toISOString());
+            
+            // Esconder banner
+            document.getElementById('cookieBanner').classList.remove('show');
+        });
+
+        // Verificar cookies ao carregar página
+        window.addEventListener('DOMContentLoaded', verificarCookies);
     </script>
 </body>
 </html>

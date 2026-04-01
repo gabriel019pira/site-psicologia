@@ -825,3 +825,130 @@ table tbody tr:hover {
         padding: 0.75rem 0.5rem;
     }
 }
+
+/* Banner de Cookies - Conformidade LGPD */
+#cookieBanner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border-top: 3px solid var(--primary-color);
+    padding: 1.5rem 2rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 180px;
+    overflow-y: auto;
+    display: none;
+}
+
+#cookieBanner.show {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+#cookieBanner .cookie-content {
+    flex: 1;
+}
+
+#cookieBanner .cookie-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+#cookieBanner .cookie-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+#cookieBanner .cookie-content a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+#cookieBanner .cookie-content a:hover {
+    text-decoration: underline;
+}
+
+#cookieBanner .cookie-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    white-space: nowrap;
+}
+
+.btn-accept-cookies {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+}
+
+.btn-accept-cookies:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-accept-cookies:active {
+    transform: translateY(0);
+}
+
+.btn-decline-cookies {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+}
+
+.btn-decline-cookies:hover {
+    background-color: #e0e0e0;
+    border-color: #999;
+}
+
+/* Ajustar body quando banner de cookies está visível */
+@media (max-width: 768px) {
+    #cookieBanner.show {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    #cookieBanner .cookie-buttons {
+        flex-direction: column;
+    }
+
+    .btn-accept-cookies,
+    .btn-decline-cookies {
+        width: 100%;
+    }
+}

@@ -16,6 +16,7 @@
             <li><a href="meus-agendamentos.html" class="nav-link">Meus Agendamentos</a></li>
             <li><a href="admin.html" class="nav-link">Administrador</a></li>
             <li><a href="contatos.html" class="nav-link active">Contatos</a></li>
+            <li><a href="privacidade.html" class="nav-link">Privacidade</a></li>
         </ul>
     </aside>
     <button class="menu-toggle" id="menuToggle">☰ Menu</button>
@@ -94,6 +95,53 @@
                     <li><strong>Profissionalismo:</strong> Atendemos conforme os códigos de ética da profissão.</li>
                 </ul>
             </div>
+
+            <!-- Formulário de Contato -->
+            <h2 style="margin-top: 3rem;">Envie uma Mensagem</h2>
+            <form id="formContato" style="max-width: 600px; margin-top: 1.5rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="nome" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-color);">Nome Completo *</label>
+                    <input type="text" id="nome" name="nome" required style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-color);">E-mail *</label>
+                    <input type="email" id="email" name="email" required style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="telefone" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-color);">Telefone (Opcional)</label>
+                    <input type="tel" id="telefone" name="telefone" style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="assunto" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-color);">Assunto *</label>
+                    <input type="text" id="assunto" name="assunto" required style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="mensagem" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-color);">Mensagem *</label>
+                    <textarea id="mensagem" name="mensagem" rows="5" required style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; font-family: inherit;"></textarea>
+                </div>
+
+                <!-- Checkbox LGPD -->
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background-color: #f0f7ff; border-left: 3px solid var(--secondary-color); border-radius: 4px;">
+                    <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                        <input type="checkbox" id="rgpd" name="rgpd" required style="margin-right: 0.8rem; margin-top: 0.3rem; cursor: pointer; width: 18px; height: 18px;">
+                        <span style="line-height: 1.4; color: #333;">
+                            Concordo com a <a href="privacidade.html" target="_blank" style="color: var(--secondary-color); text-decoration: underline; font-weight: 500;">Política de Privacidade</a> e autorizo o armazenamento seguro de meus dados para resposta de contato. *
+                        </span>
+                    </label>
+                </div>
+
+                <div id="mensagemErro" style="margin-bottom: 1rem; padding: 1rem; background-color: #f8d7da; color: #721c24; border-radius: 4px; display: none;"></div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 600;">Enviar Mensagem</button>
+
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                    * Campos obrigatórios. Seus dados são protegidos conforme a LGPD.
+                </p>
+            </form>
         </div>
     </div>
 
@@ -101,7 +149,7 @@
     <footer class="footer">
         <div class="container">
             <p>&copy; 2026 Franciele Silva - Consultório de Psicologia. Todos os direitos reservados.</p>
-            <p>CRP: 12/3456</p>
+            <p>CRP: 12/3456 | <a href="privacidade.html" style="color: inherit; text-decoration: underline;">Política de Privacidade</a></p>
         </div>
     </footer>
 
@@ -128,6 +176,47 @@
             });
         });
 
+        // Manipulador do formulário de contato
+        document.getElementById('formContato').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Validar checkbox RGPD
+            const checkboxRGPD = document.getElementById('rgpd');
+            const mensagemErro = document.getElementById('mensagemErro');
+
+            if (!checkboxRGPD.checked) {
+                mensagemErro.textContent = '⚠️ Você deve concordar com a Política de Privacidade para enviar a mensagem.';
+                mensagemErro.style.display = 'block';
+                checkboxRGPD.focus();
+                return;
+            }
+
+            // Se passou na validação
+            mensagemErro.style.display = 'none';
+
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const telefone = document.getElementById('telefone').value;
+            const assunto = document.getElementById('assunto').value;
+            const mensagem = document.getElementById('mensagem').value;
+
+            // Simular envio (em produção, isso seria enviado para um servidor)
+            console.log('Mensagem para enviar:', {
+                nome: nome,
+                email: email,
+                telefone: telefone,
+                assunto: assunto,
+                mensagem: mensagem,
+                consentimento_rgpd: true,
+                data: new Date().toISOString()
+            });
+
+            // Mostrar mensagem de sucesso
+            alert('✅ Obrigado! Sua mensagem foi recebida.\n\nResponderemos em até 24 horas úteis.');
+
+            // Limpar formulário
+            this.reset();
+        });
     </script>
 
     <style>
