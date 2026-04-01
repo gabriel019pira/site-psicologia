@@ -206,6 +206,14 @@ function inicializarPaginaAgendamento() {
     formAgendamento.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Validar checkbox RGPD
+        const checkboxRGPD = document.getElementById('rgpd');
+        if (!checkboxRGPD.checked) {
+            alertaDiv.innerHTML = '<div class="alert alert-error">⚠️ Você deve concordar com a Política de Privacidade para agendar a consulta.</div>';
+            checkboxRGPD.focus();
+            return;
+        }
+        
         // Verificar se Supabase carregou
         if (!window.supabase || typeof window.supabase.createClient !== 'function') {
             alertaDiv.innerHTML = '<div class="alert alert-error">❌ ERRO: Conexão com servidor não foi carregada. Recarregue a página (F5).</div>';
@@ -219,7 +227,9 @@ function inicializarPaginaAgendamento() {
             cpf: document.getElementById('cpf').value,
             data: document.getElementById('data').value,
             hora: document.getElementById('hora').value,
-            motivo: document.getElementById('motivo').value
+            motivo: document.getElementById('motivo').value,
+            consentimento_rgpd: true,
+            data_consentimento: new Date().toISOString()
         };
 
         try {
