@@ -1,0 +1,33 @@
+# Robots.txt - Site de Psicologia - Dra. Franciele Silva
+# Este arquivo orienta os mecanismos de busca (Google, Bing, etc.)
+
+# Permitir acesso a todos os bots
+User-agent: *
+Allow: /
+
+# Crawl delay (esperar 1 segundo entre requisições - ajuste conforme necessário)
+Crawl-delay: 1
+
+# Disallow específico para páginas administrativas
+Disallow: /admin/
+Disallow: /assets/admin/
+
+# Apontamento do sitemap
+Sitemap: https://seu-dominio.com/sitemap.xml
+
+# Regras específicas para Google
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+# Regras específicas para Bing
+User-agent: Bingbot
+Allow: /
+
+# Bloquear bots maliciosos (opcional)
+User-agent: AhrefsBot
+User-agent: SemrushBot
+User-agent: DotBot
+Disallow: /
